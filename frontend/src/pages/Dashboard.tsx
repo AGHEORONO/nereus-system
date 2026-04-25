@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import NereusMap from '../components/Map/NereusMap'
 import TimeSlider from '../components/Map/TimeSlider'
 import AlertsPanel from '../components/AlertsPanel/AlertsPanel'
 import ReportModal from '../components/ReportModal/ReportModal'
-import WelcomeScreen from '../components/WelcomeScreen'
 import Header from '../components/Header'
+import LocationSearch from '../components/LocationSearch'
 import { useNereusStore } from '../store/useNereusStore'
 import { useAlerts, useReports, useHeatmap, useHealth, useScan } from '../hooks/useNereusQueries'
 import type { BoundingBox } from '../types/geo'
@@ -24,12 +24,10 @@ function last5Dates(): string[] {
 const DATES = last5Dates()
 
 export default function Dashboard() {
-  // City selection
-  const [selectedCity, setSelectedCity] = useState<string | null>(null)
-  const [cityBbox, setCityBbox] = useState<BoundingBox | undefined>()
-
   // Global UI state via zustand
   const {
+    selectedLocation, locationBbox,
+    setLocation, setLocationBbox,
     panelOpen, setPanelOpen,
     reportModalOpen, setReportModalOpen,
     dateIndex, setDateIndex,
@@ -43,33 +41,21 @@ export default function Dashboard() {
   const { data: health } = useHealth()
   const scanMutation = useScan()
 
-  if (!selectedCity) {
-    return (
-      <WelcomeScreen
-        onCitySelect={(city, _center, bbox) => {
-          setSelectedCity(city)
-          setCityBbox(bbox)
-        }}
-      />
-    )
-  }
+  // Defaults
+  const cityName = selectedLocation?.name || 'Timișoara'
+  const isTimisoara = cityName.toLowerCase().includes('timi') || cityName.toLowerCase().includes('bega')
+  const activeBbox = locationBbox || { west: 21.15, south: 45.72, east: 21.35, north: 45.78 }
 
-  const isTimisoara = selectedCity.toLowerCase().includes('timi')
   const displayAlerts = isTimisoara ? alerts : []
   const displayReports = isTimisoara ? reports : []
   const displayHeatmap = isTimisoara ? heatmap : null
   const offline = alertsErr || reportsErr
 
-  // Scan bbox: either city bbox or default Bega region
-  const scanBbox = cityBbox
-    ? { west: cityBbox.west, south: cityBbox.south, east: cityBbox.east, north: cityBbox.north }
-    : { west: 21.15, south: 45.72, east: 21.35, north: 45.78 }
-
   const handleScan = async () => {
     setScan(true)
     try {
       const result = await scanMutation.mutateAsync({
-        ...scanBbox,
+        ...activeBbox,
         start_date: DATES[0],
         end_date: DATES[DATES.length - 1],
       })
@@ -83,6 +69,22 @@ export default function Dashboard() {
     }
   }
 
+  // Trigger scan on mount
+  const hasScanned = useRef(false)
+  useEffect(() => {
+    if (!hasScanned.current) {
+      handleScan()
+      hasScanned.current = true
+    }
+  }, [])
+
+  const handleSearchSelect = (name: string, center: { lat: number; lng: number }, bbox: BoundingBox) => {
+    setLocation(name, center.lat, center.lng)
+    setLocationBbox(bbox)
+    hasScanned.current = false // Trigger new scan for new location
+    handleScan()
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Full-bleed map */}
@@ -90,11 +92,15 @@ export default function Dashboard() {
         alerts={displayAlerts}
         reports={displayReports}
         heatmap={displayHeatmap}
-        cityBbox={cityBbox}
+        cityBbox={activeBbox}
       />
 
       {/* Header */}
-      <Header onSubmitReport={() => setReportModalOpen(true)} cityName={selectedCity} />
+      <Header
+        onSubmitReport={() => setReportModalOpen(true)}
+        cityName={cityName}
+        citySearchNode={<LocationSearch onSelect={handleSearchSelect} />}
+      />
 
       {/* Offline badge */}
       {offline && (

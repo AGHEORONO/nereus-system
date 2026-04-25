@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand'
 import type { Alert, CitizenReport } from '../types'
+import type { BoundingBox } from '../types/geo'
 
 interface ScanResult {
   scene_date: string
@@ -11,7 +12,21 @@ interface ScanResult {
   alerts_created: number
 }
 
+interface SelectedLocation {
+  name: string
+  lat: number
+  lon: number
+}
+
 interface NereusStore {
+  // Selected location (set by landing page or quick-pick)
+  selectedLocation: SelectedLocation | null
+  setLocation: (name: string, lat: number, lon: number) => void
+
+  // Location bounding box
+  locationBbox: BoundingBox | null
+  setLocationBbox: (bbox: BoundingBox) => void
+
   // Panel state
   panelOpen: boolean
   setPanelOpen: (open: boolean) => void
@@ -38,6 +53,12 @@ interface NereusStore {
 }
 
 export const useNereusStore = create<NereusStore>((set) => ({
+  selectedLocation: null,
+  setLocation: (name, lat, lon) => set({ selectedLocation: { name, lat, lon } }),
+
+  locationBbox: null,
+  setLocationBbox: (locationBbox) => set({ locationBbox }),
+
   panelOpen: true,
   setPanelOpen: (open) => set({ panelOpen: open }),
 

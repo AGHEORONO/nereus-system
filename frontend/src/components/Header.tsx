@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Waves, FileUp, Globe, Info } from 'lucide-react';
+import { FileUp, Globe, Info } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
@@ -22,29 +22,13 @@ export default function Header({ onSubmitReport, citySearchNode, cityName = 'Tim
       className="glass-panel fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3"
       style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}
     >
-      <div className="flex items-center gap-4">
-        <div
-          className="flex items-center justify-center w-10 h-10 rounded-lg"
-          style={{
-            background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(0, 229, 255, 0.05))',
-            border: '1px solid rgba(0, 229, 255, 0.2)',
-          }}
-        >
-          <Waves className="w-5 h-5 text-cyan" />
-        </div>
-
-        <div className="flex flex-col">
-          <span
-            className="font-display text-sm font-medium tracking-widest uppercase"
-            style={{ color: 'var(--cyan-dim)', letterSpacing: '0.15em', fontSize: '10px' }}
-          >
-            {t('app.subtitle')}
-          </span>
-          <h1 className="font-display text-lg font-semibold text-text-primary leading-tight -mt-0.5">
-            {t('app.title')}
-          </h1>
-        </div>
-      </div>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <img
+          src="/logo-solid.png"
+          alt="The Nereus System"
+          style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+        />
+      </Link>
 
       <div className="hidden md:flex items-center gap-4">
         {citySearchNode ? (

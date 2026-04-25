@@ -10,8 +10,7 @@ export default function About() {
     }}>
       {/* Nav */}
       <div className="glass" style={{ position: 'sticky', top: 0, zIndex: 50, padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', gap: '16px', borderRadius: 0 }}>
-        <span style={{ fontSize: '20px' }}>🌊</span>
-        <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--color-primary)', letterSpacing: '0.12em' }}>NEREUS</span>
+        <img src="/logo-solid.png" alt="Nereus" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
         <div style={{ flex: 1 }} />
         <Link to="/dashboard" style={{ textDecoration: 'none' }}>
           <button className="btn btn-primary" style={{ fontSize: '12px' }}>← Live Dashboard</button>
@@ -21,10 +20,11 @@ export default function About() {
       <div style={{ maxWidth: '860px', margin: '0 auto', padding: '48px 24px 0' }}>
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>🌊</div>
-          <h1 style={{ fontSize: '42px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', lineHeight: 1.15 }}>
-            The Nereus System
-          </h1>
+          <img
+            src="/logo-solid.png"
+            alt="The Nereus System"
+            style={{ height: '140px', width: 'auto', objectFit: 'contain', margin: '0 auto 20px', display: 'block', filter: 'drop-shadow(0 0 20px rgba(0,229,255,0.12))' }}
+          />
           <p style={{ fontSize: '18px', color: 'var(--color-text-2)', maxWidth: '580px', margin: '0 auto', lineHeight: 1.6 }}>
             An early-warning platform for water pollution detection using <strong style={{ color: 'var(--color-primary)' }}>Copernicus satellite imagery</strong> and <strong style={{ color: 'var(--color-primary)' }}>Galileo positioning</strong>.
           </p>

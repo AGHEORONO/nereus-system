@@ -41,31 +41,26 @@ export default function LandingPage() {
       <div style={{
         fontSize: '11px', fontWeight: 700, color: '#00e5ff',
         letterSpacing: '0.2em', textTransform: 'uppercase',
-        marginBottom: '20px', fontFamily: 'Inter, sans-serif',
+        marginBottom: '24px', fontFamily: 'Inter, sans-serif',
         opacity: 0, animation: 'fadeSlideUp 0.6s ease-out 0.1s forwards',
       }}>
         CASSINI Hackathons — Space for Water
       </div>
 
-      {/* Title */}
-      <h1 style={{
-        fontSize: 'clamp(32px, 6vw, 56px)', fontWeight: 800,
-        color: '#e2f0ff', textAlign: 'center', margin: '0 0 16px',
-        fontFamily: 'Inter, sans-serif', lineHeight: 1.1,
+      {/* Logo image */}
+      <div style={{
+        marginBottom: '24px',
         opacity: 0, animation: 'fadeSlideUp 0.6s ease-out 0.2s forwards',
       }}>
-        The Nereus System
-      </h1>
-
-      {/* Wave SVG */}
-      <div style={{
-        marginBottom: '20px',
-        opacity: 0, animation: 'fadeSlideUp 0.6s ease-out 0.3s forwards',
-      }}>
-        <svg width="60" height="32" viewBox="0 0 60 32" fill="none" style={{ animation: 'waveShift 3s ease-in-out infinite' }}>
-          <path d="M0 20 C10 12, 20 28, 30 20 S50 12, 60 20" stroke="#00e5ff" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-          <path d="M0 26 C10 18, 20 34, 30 26 S50 18, 60 26" stroke="#00e5ff" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.4" />
-        </svg>
+        <img
+          src="/logo-solid.png"
+          alt="The Nereus System"
+          style={{
+            height: 'clamp(120px, 20vw, 200px)',
+            width: 'auto', objectFit: 'contain',
+            filter: 'drop-shadow(0 0 30px rgba(0,229,255,0.15))',
+          }}
+        />
       </div>
 
       {/* Description */}

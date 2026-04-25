@@ -4,7 +4,6 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Alert, CitizenReport, HeatmapCollection } from '../../types'
 import type { BoundingBox } from '../../types/geo'
 
-const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY as string
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
 // Demo centre: Bega canal, Timișoara

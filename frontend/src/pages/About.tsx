@@ -92,6 +92,70 @@ export default function About() {
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* Case Study — Why Nereus Exists                                 */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <Section title="⚠️ A Real Problem on the Bega" icon="🐟">
+          <div className="glass" style={{
+            marginTop: '16px', padding: '24px', borderLeft: '4px solid #ff6b35',
+            background: 'linear-gradient(135deg, rgba(255,107,53,0.06) 0%, rgba(255,60,60,0.02) 100%)',
+          }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '10px', fontWeight: 700, fontFamily: 'var(--font-mono)',
+                color: '#ff6b35', background: 'rgba(255,107,53,0.12)', padding: '3px 10px',
+                borderRadius: '4px', border: '1px solid rgba(255,107,53,0.25)',
+                textTransform: 'uppercase', letterSpacing: '0.1em',
+              }}>Documented Event</span>
+              <span style={{
+                fontSize: '10px', fontWeight: 700, fontFamily: 'var(--font-mono)',
+                color: '#7aa8cc', background: 'rgba(122,168,204,0.1)', padding: '3px 10px',
+                borderRadius: '4px', border: '1px solid rgba(122,168,204,0.15)',
+              }}>Tion.ro · Radio Reșița · Garda de Mediu Timiș · ABA Banat</span>
+            </div>
+
+            <p style={{ fontSize: '14px', color: 'var(--color-text-1)', lineHeight: 1.7, margin: '0 0 14px' }}>
+              On <strong style={{ color: '#ff6b35' }}>July 5, 2021</strong> and again on <strong style={{ color: '#ff6b35' }}>July 11, 2025</strong>, residents
+              of Timișoara filmed dead fish floating on the Bega river. The culprit: heavy rainfall had overwhelmed the
+              AQUATIM wastewater treatment plant, triggering emergency pumps that discharged untreated sewage directly
+              into the canal.
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-2)', lineHeight: 1.7, margin: '0 0 14px' }}>
+              By the time Garda de Mediu and ABA Banat arrived to take water samples, over <strong style={{ color: '#ff3b3b' }}>20 hours</strong> had
+              passed. The pollution was already undetectable. No one was held accountable. The same event happened again
+              four years later.
+            </p>
+
+            <div className="glass" style={{
+              padding: '16px', borderLeft: '3px solid #00e87a',
+              background: 'rgba(0,232,122,0.04)',
+            }}>
+              <div style={{ fontSize: '11px', color: '#00e87a', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                What Nereus would have done
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--color-text-1)', lineHeight: 1.6, margin: 0 }}>
+                Nereus would have detected the turbidity and dissolved oxygen anomaly within the next Sentinel-2
+                overpass — typically within <strong style={{ color: '#00e87a' }}>1–3 days</strong> — and issued an automated alert to both authorities
+                and citizens. Early warning means early intervention. The fish don't have to die first.
+              </p>
+            </div>
+
+            <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                'AQUATIM discharge point → Sânmihai Românesc → Otelec (Serbian border)',
+                '~40 km affected stretch',
+                '114 km total Bega canal length',
+              ].map(tag => (
+                <span key={tag} style={{
+                  fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-text-3)',
+                  background: 'rgba(255,255,255,0.04)', padding: '3px 8px', borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
         {/* Section 2 — Data Sources Table                                 */}
         {/* ═══════════════════════════════════════════════════════════════ */}
         <Section title="📊 Data Sources" icon="📐">

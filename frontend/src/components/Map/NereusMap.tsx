@@ -171,6 +171,73 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
     })
   }, [reports])
 
+  // ── Historical case-study markers (hardcoded demo overlay) ──────────
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const historicalEvents = [
+      {
+        lat: 45.7270, lon: 21.5790,
+        label: 'July 2021 — AQUATIM overflow event',
+        popup: 'Untreated sewage discharge detected. Fish mortality reported downstream. Garda de Mediu confirmed 20+ hour response delay.',
+        date: '2021-07-05',
+      },
+      {
+        lat: 45.7210, lon: 21.6050,
+        label: 'July 2025 — Recurring overflow event',
+        popup: 'Same discharge pattern repeated. Heavy rainfall overwhelmed treatment capacity. ABA Banat and Garda de Mediu deployed emergency response.',
+        date: '2025-07-11',
+      },
+    ]
+
+    const onReady = () => {
+      historicalEvents.forEach(evt => {
+        const el = document.createElement('div')
+        el.style.cssText = `
+          position:relative; width:20px; height:20px; border-radius:50%;
+          background:rgba(255,107,53,0.25);
+          border:2px dashed #ff6b35;
+          cursor:pointer;
+          box-shadow:0 0 8px rgba(255,107,53,0.3);
+        `
+        // Inner dot
+        const dot = document.createElement('div')
+        dot.style.cssText = `
+          position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+          width:8px; height:8px; border-radius:50%;
+          background:#ff6b35;
+        `
+        el.appendChild(dot)
+
+        const popup = new maplibregl.Popup({ offset: 14, maxWidth: '260px' }).setHTML(`
+          <div style="font-family:Inter,sans-serif;font-size:13px;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="font-weight:700;font-size:13px;color:#e2f0ff">${evt.label}</span>
+            </div>
+            <div style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;
+              background:rgba(255,107,53,0.12);color:#ff6b35;border:1px solid rgba(255,107,53,0.3);
+              margin-bottom:8px;letter-spacing:0.05em">HISTORICAL EVENT</div>
+            <div style="color:#7aa8cc;margin-bottom:4px;font-size:11px">📅 ${evt.date}</div>
+            <div style="color:#e2f0ff;margin-bottom:4px">⚠ Turbidity — HIGH</div>
+            <div style="color:#7aa8cc;font-size:12px;line-height:1.5">${evt.popup}</div>
+          </div>
+        `)
+
+        new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([evt.lon, evt.lat])
+          .setPopup(popup)
+          .addTo(map)
+      })
+    }
+
+    if (map.isStyleLoaded()) {
+      onReady()
+    } else {
+      map.once('load', onReady)
+    }
+  }, [])
+
   return (
     <div
       ref={containerRef}

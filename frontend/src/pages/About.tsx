@@ -13,7 +13,7 @@ export default function About() {
         <span style={{ fontSize: '20px' }}>🌊</span>
         <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--color-primary)', letterSpacing: '0.12em' }}>NEREUS</span>
         <div style={{ flex: 1 }} />
-        <Link to="/" style={{ textDecoration: 'none' }}>
+        <Link to="/dashboard" style={{ textDecoration: 'none' }}>
           <button className="btn btn-primary" style={{ fontSize: '12px' }}>← Live Dashboard</button>
         </Link>
       </div>

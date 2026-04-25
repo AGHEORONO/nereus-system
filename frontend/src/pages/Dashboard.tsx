@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import NereusMap from '../components/Map/NereusMap'
 import TimeSlider from '../components/Map/TimeSlider'
@@ -9,6 +9,7 @@ import LocationSearch from '../components/LocationSearch'
 import { useNereusStore } from '../store/useNereusStore'
 import { useAlerts, useReports, useHeatmap, useHealth, useScan } from '../hooks/useNereusQueries'
 import type { BoundingBox } from '../types/geo'
+import type { Alert, CitizenReport } from '../types'
 
 // Last 5 Sentinel-2 pass dates (5-day repeat cycle, oldest → newest)
 function last5Dates(): string[] {
@@ -22,6 +23,61 @@ function last5Dates(): string[] {
   return dates
 }
 const DATES = last5Dates()
+
+// Generate demo alerts for any location (so every city shows data)
+function generateDemoAlerts(lat: number, lon: number, cityName: string): Alert[] {
+  const now = new Date()
+  const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000).toISOString()
+  const types: Array<{ type: Alert['pollution_type']; label: string }> = [
+    { type: 'TURBIDITY', label: 'Elevated turbidity detected' },
+    { type: 'ALGAL_BLOOM', label: 'Potential algal bloom' },
+    { type: 'CHEMICAL', label: 'Anomalous spectral signature' },
+  ]
+  return [
+    {
+      id: 9001,
+      timestamp: daysAgo(2),
+      lat: lat + 0.003,
+      lon: lon - 0.005,
+      ndci_max: 0.14,
+      turbidity_max: 1.35,
+      severity: 'HIGH' as const,
+      pollution_type: types[0].type,
+      area_ha: 8.2,
+      source: 'satellite' as const,
+      scene_date: DATES[4],
+      description: `${types[0].label} near ${cityName}. Sentinel-2 L2A analysis shows anomalous red/green ratio (1.35). Area: ~8.2 ha.`,
+    },
+    {
+      id: 9002,
+      timestamp: daysAgo(7),
+      lat: lat - 0.004,
+      lon: lon + 0.008,
+      ndci_max: 0.08,
+      turbidity_max: 1.22,
+      severity: 'MEDIUM' as const,
+      pollution_type: types[1].type,
+      area_ha: 4.5,
+      source: 'satellite' as const,
+      scene_date: DATES[3],
+      description: `${types[1].label} upstream of ${cityName}. NDCI value 0.08 exceeds threshold. Monitoring recommended.`,
+    },
+    {
+      id: 9003,
+      timestamp: daysAgo(12),
+      lat: lat + 0.006,
+      lon: lon + 0.003,
+      ndci_max: 0.03,
+      turbidity_max: 1.16,
+      severity: 'LOW' as const,
+      pollution_type: types[2].type,
+      area_ha: 2.1,
+      source: 'satellite' as const,
+      scene_date: DATES[2],
+      description: `${types[2].label} detected in ${cityName} region. Low-severity, consistent with post-rain sediment load.`,
+    },
+  ]
+}
 
 export default function Dashboard() {
   // Global UI state via zustand
@@ -41,17 +97,28 @@ export default function Dashboard() {
   const { data: health } = useHealth()
   const scanMutation = useScan()
 
+  // Local reports (appear instantly, expire after 60s)
+  const [localReports, setLocalReports] = useState<CitizenReport[]>([])
+  const [successToast, setSuccessToast] = useState<string | null>(null)
+
   // Defaults
   const cityName = selectedLocation?.name || 'Timișoara'
   const isTimisoara = cityName.toLowerCase().includes('timi') || cityName.toLowerCase().includes('bega')
   const activeBbox = locationBbox || { west: 21.15, south: 45.72, east: 21.35, north: 45.78 }
 
-  const displayAlerts = isTimisoara ? alerts : []
+  // For non-Timișoara locations, generate demo alerts
+  const displayAlerts = isTimisoara
+    ? alerts
+    : generateDemoAlerts(
+        selectedLocation?.lat || 45.752,
+        selectedLocation?.lon || 21.23,
+        cityName
+      )
   const displayReports = isTimisoara ? reports : []
   const displayHeatmap = isTimisoara ? heatmap : null
   const offline = alertsErr || reportsErr
 
-  const handleScan = async () => {
+  const handleScan = useCallback(async () => {
     setScan(true)
     try {
       const result = await scanMutation.mutateAsync({
@@ -67,7 +134,7 @@ export default function Dashboard() {
     } finally {
       setScan(false)
     }
-  }
+  }, [activeBbox, setScan, setLastScanResult, scanMutation])
 
   // Trigger scan on mount
   const hasScanned = useRef(false)
@@ -81,8 +148,22 @@ export default function Dashboard() {
   const handleSearchSelect = (name: string, center: { lat: number; lng: number }, bbox: BoundingBox) => {
     setLocation(name, center.lat, center.lng)
     setLocationBbox(bbox)
-    hasScanned.current = false // Trigger new scan for new location
+    hasScanned.current = false
     handleScan()
+  }
+
+  // Handle report submission — instant feedback + auto-expire
+  const handleReportSubmitted = (report: CitizenReport) => {
+    setLocalReports(prev => [...prev, report])
+    setSuccessToast(`Report submitted for ${report.pollution_type.replace(/_/g, ' ').toLowerCase()}`)
+
+    // Toast disappears after 5s
+    setTimeout(() => setSuccessToast(null), 5000)
+
+    // Local report marker disappears after 60s (next API poll picks it up)
+    setTimeout(() => {
+      setLocalReports(prev => prev.filter(r => r.id !== report.id))
+    }, 60_000)
   }
 
   return (
@@ -93,6 +174,7 @@ export default function Dashboard() {
         reports={displayReports}
         heatmap={displayHeatmap}
         cityBbox={activeBbox}
+        localReports={localReports}
       />
 
       {/* Header */}
@@ -114,15 +196,43 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Alerts sidebar */}
-      {isTimisoara && (
-        <AlertsPanel
-          alerts={displayAlerts}
-          reports={displayReports}
-          loading={false}
-          collapsed={!panelOpen}
-          onToggle={() => setPanelOpen(!panelOpen)}
-        />
+      {/* Success toast */}
+      {successToast && (
+        <div style={{
+          position: 'absolute', top: '72px', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 40, padding: '8px 18px', borderRadius: '8px', fontSize: '13px',
+          background: 'rgba(0,230,118,0.12)', border: '1px solid rgba(0,230,118,0.35)',
+          color: '#00e676', fontWeight: 600,
+          animation: 'fadeSlideUp 0.3s ease-out',
+        }}>
+          ✓ {successToast}
+        </div>
+      )}
+
+      {/* Alerts sidebar — always show, toggleable */}
+      <AlertsPanel
+        alerts={displayAlerts}
+        reports={[...displayReports, ...localReports]}
+        loading={false}
+        collapsed={!panelOpen}
+        onToggle={() => setPanelOpen(!panelOpen)}
+      />
+
+      {/* Panel open button (when collapsed) */}
+      {!panelOpen && (
+        <button
+          onClick={() => setPanelOpen(true)}
+          style={{
+            position: 'absolute', top: '72px', left: '16px', zIndex: 20,
+            padding: '8px 14px', borderRadius: '8px', cursor: 'pointer',
+            background: 'rgba(10,22,40,0.85)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(0,229,255,0.2)',
+            color: '#00e5ff', fontSize: '12px', fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: '6px',
+          }}
+        >
+          📋 Alerts ({displayAlerts.length})
+        </button>
       )}
 
       {/* Trigger Scan button */}
@@ -244,6 +354,7 @@ export default function Dashboard() {
           { color: '#ff8c00', label: 'MEDIUM alert' },
           { color: '#f5d800', label: 'LOW alert' },
           { color: '#00b4ff', label: 'Citizen report' },
+          { color: '#00e676', label: 'Your report' },
         ].map(({ color, label }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}` }} />
@@ -259,8 +370,16 @@ export default function Dashboard() {
       <ReportModal
         open={reportModalOpen}
         onClose={() => setReportModalOpen(false)}
-        onSubmitted={() => { setReportModalOpen(false) }}
+        onSubmitted={handleReportSubmitted}
       />
+
+      {/* Keyframes for toast */}
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
     </div>
   )
 }

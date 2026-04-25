@@ -15,13 +15,15 @@ interface Props {
   reports: CitizenReport[]
   heatmap: HeatmapCollection | null
   cityBbox?: BoundingBox
+  localReports?: CitizenReport[]
 }
 
-export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props) {
+export default function NereusMap({ alerts, reports, heatmap, cityBbox, localReports = [] }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const alertMarkersRef = useRef<maplibregl.Marker[]>([])
   const reportMarkersRef = useRef<maplibregl.Marker[]>([])
+  const localReportMarkersRef = useRef<maplibregl.Marker[]>([])
 
   // ── Init map ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -104,7 +106,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
     }
   }, [heatmap])
 
-  // ── Alert markers ────────────────────────────────────────────────────────
+  // ── Alert markers (fixed: no animated pulse ring to prevent zoom jitter) ─
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -115,21 +117,12 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
     alerts.forEach(alert => {
       const el = document.createElement('div')
       el.style.cssText = `
-        position:relative; width:16px; height:16px; border-radius:50%;
+        width:16px; height:16px; border-radius:50%;
         background:${severityColor(alert.severity)};
         border:2px solid #fff;
         cursor:pointer;
-        box-shadow:0 0 12px ${severityColor(alert.severity)};
+        box-shadow:0 0 8px ${severityColor(alert.severity)};
       `
-      // Pulse ring
-      const ring = document.createElement('div')
-      ring.style.cssText = `
-        position:absolute; inset:-4px; border-radius:50%;
-        background:${severityColor(alert.severity)};
-        opacity:0.6;
-        animation:pulse-ring 1.8s ease-out infinite;
-      `
-      el.appendChild(ring)
 
       const popup = new maplibregl.Popup({ offset: 12 }).setHTML(popupHtml(alert))
 
@@ -142,7 +135,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
     })
   }, [alerts])
 
-  // ── Report markers ───────────────────────────────────────────────────────
+  // ── Report markers (from API) ───────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -157,7 +150,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
         background:#00b4ff;
         border:2px solid #fff;
         cursor:pointer;
-        box-shadow:0 0 10px #00b4ff;
+        box-shadow:0 0 8px #00b4ff;
       `
 
       const popup = new maplibregl.Popup({ offset: 12 }).setHTML(reportPopupHtml(report))
@@ -170,6 +163,48 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
       reportMarkersRef.current.push(marker)
     })
   }, [reports])
+
+  // ── Local (just-submitted) report markers with green glow ───────────────
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    localReportMarkersRef.current.forEach(m => m.remove())
+    localReportMarkersRef.current = []
+
+    localReports.forEach(report => {
+      const el = document.createElement('div')
+      el.style.cssText = `
+        width:16px; height:16px; border-radius:50%;
+        background:#00e676;
+        border:2px solid #fff;
+        cursor:pointer;
+        box-shadow:0 0 12px #00e676;
+      `
+
+      const popup = new maplibregl.Popup({ offset: 12 }).setHTML(`
+        <div style="font-family:Inter,sans-serif;font-size:13px;min-width:180px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="font-weight:700;font-size:14px;color:#e2f0ff">Your Report</span>
+            <span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;
+              background:rgba(0,230,118,0.15);color:#00e676;border:1px solid rgba(0,230,118,0.3)">JUST NOW</span>
+          </div>
+          <div style="color:#00e676;margin-bottom:4px;font-size:11px">
+            Galileo/GNSS • ${new Date(report.timestamp).toLocaleTimeString()}
+          </div>
+          <div style="color:#e2f0ff;margin-bottom:4px">⚠ ${report.pollution_type.replace(/_/g, ' ')}</div>
+          <div style="color:#7aa8cc;font-size:12px">${report.description}</div>
+        </div>
+      `)
+
+      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+        .setLngLat([report.lon, report.lat])
+        .setPopup(popup)
+        .addTo(map)
+
+      localReportMarkersRef.current.push(marker)
+    })
+  }, [localReports])
 
   // ── Historical case-study markers (hardcoded demo overlay) ──────────
   useEffect(() => {
@@ -195,16 +230,16 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox }: Props)
       historicalEvents.forEach(evt => {
         const el = document.createElement('div')
         el.style.cssText = `
-          position:relative; width:20px; height:20px; border-radius:50%;
+          width:20px; height:20px; border-radius:50%;
           background:rgba(255,107,53,0.25);
           border:2px dashed #ff6b35;
           cursor:pointer;
           box-shadow:0 0 8px rgba(255,107,53,0.3);
+          display:flex; align-items:center; justify-content:center;
         `
         // Inner dot
         const dot = document.createElement('div')
         dot.style.cssText = `
-          position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
           width:8px; height:8px; border-radius:50%;
           background:#ff6b35;
         `

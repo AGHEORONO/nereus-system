@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { submitReport } from '../../api/client'
-import type { PollutionType } from '../../types'
+import type { PollutionType, CitizenReport } from '../../types'
 
 interface Props {
   open: boolean
   onClose: () => void
-  onSubmitted: () => void
+  onSubmitted: (report: CitizenReport) => void
 }
 
 const POLLUTION_TYPES: { value: PollutionType; label: string; icon: string }[] = [
@@ -27,6 +27,11 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const photoPreviewUrl = useMemo(() => {
+    if (!photo) return null
+    return URL.createObjectURL(photo)
+  }, [photo])
 
   if (!open) return null
 
@@ -51,15 +56,33 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
     setError(null)
     try {
       await submitReport({ lat, lon, pollution_type: type, description, photo: photo ?? undefined })
-      onSubmitted()
+
+      // Create local report for instant feedback
+      const localReport: CitizenReport = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        lat,
+        lon,
+        pollution_type: type,
+        description,
+        photo_url: photoPreviewUrl,
+      }
+
+      onSubmitted(localReport)
       onClose()
+      // Reset form
       setLat(null); setLon(null); setGpsStatus('idle')
-      setDescription(''); setPhoto(null)
+      setDescription(''); setPhoto(null); setType('OTHER')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Submission failed')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function removePhoto() {
+    setPhoto(null)
+    if (fileRef.current) fileRef.current.value = ''
   }
 
   return (
@@ -77,7 +100,7 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
       <div
         className="glass animate-slide-in-up"
         onClick={e => e.stopPropagation()}
-        style={{ width: 'min(480px, calc(100vw - 32px))', padding: '24px', position: 'relative' }}
+        style={{ width: 'min(480px, calc(100vw - 32px))', padding: '24px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -144,7 +167,7 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
             />
           </div>
 
-          {/* Photo upload */}
+          {/* Photo upload with preview */}
           <div>
             <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-2)', marginBottom: '6px', display: 'block' }}>
               Photo (optional)
@@ -154,8 +177,36 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
               style={{ display: 'none' }} />
             <button type="button" className="btn btn-ghost" onClick={() => fileRef.current?.click()}
               style={{ fontSize: '12px' }}>
-              📷 {photo ? photo.name : 'Attach photo'}
+              📷 {photo ? 'Change photo' : 'Attach photo'}
             </button>
+
+            {/* Photo preview */}
+            {photo && photoPreviewUrl && (
+              <div style={{
+                marginTop: '10px', position: 'relative',
+                border: '1px solid rgba(0,229,255,0.2)', borderRadius: '8px',
+                overflow: 'hidden', maxHeight: '200px',
+              }}>
+                <img
+                  src={photoPreviewUrl}
+                  alt="Report photo preview"
+                  style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
+                />
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  padding: '6px 10px', background: 'rgba(10,22,40,0.85)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <span style={{ fontSize: '11px', color: '#7aa8cc' }}>{photo.name}</span>
+                  <button type="button" onClick={removePhoto}
+                    style={{
+                      fontSize: '10px', color: '#ff3b3b', background: 'rgba(255,59,59,0.1)',
+                      border: '1px solid rgba(255,59,59,0.3)', borderRadius: '4px',
+                      padding: '2px 8px', cursor: 'pointer',
+                    }}>Remove</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {error && (

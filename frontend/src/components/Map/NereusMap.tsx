@@ -5,7 +5,7 @@ import type { Alert, CitizenReport, HeatmapCollection } from '../../types'
 import type { BoundingBox } from '../../types/geo'
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY as string
-const MAP_STYLE = `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`
+const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
 // Demo centre: Bega canal, Timișoara
 const CENTER: [number, number] = [21.23, 45.752]

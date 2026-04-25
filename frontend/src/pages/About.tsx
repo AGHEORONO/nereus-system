@@ -35,8 +35,104 @@ export default function About() {
           </div>
         </div>
 
-        {/* Pipeline diagram */}
-        <Section title="📡 Data Pipeline" icon="🛰">
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* Section 1 — How It Works: SVG Pipeline Diagram                */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <Section title="🛰 How It Works" icon="📡">
+          <div style={{ marginTop: '20px', overflowX: 'auto' }}>
+            <svg viewBox="0 0 900 120" style={{ width: '100%', minWidth: '700px', height: 'auto' }}>
+              {/* Definitions */}
+              <defs>
+                <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#00e5ff" />
+                </marker>
+                <linearGradient id="boxGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(0,229,255,0.12)" />
+                  <stop offset="100%" stopColor="rgba(0,229,255,0.04)" />
+                </linearGradient>
+              </defs>
+
+              {/* Pipeline boxes */}
+              {[
+                { x: 0,   label: 'Sentinel-2',    sub: 'Satellite',          color: '#a78bfa' },
+                { x: 145, label: 'Copernicus',     sub: 'Data Space',         color: '#7c8aff' },
+                { x: 290, label: 'openEO',         sub: 'Processing',         color: '#00b4ff' },
+                { x: 435, label: 'Spectral Index', sub: 'NDWI · NDCI · Turb', color: '#00e87a' },
+                { x: 580, label: 'Anomaly',        sub: 'Detection',          color: '#ff8c00' },
+                { x: 725, label: 'Alert',          sub: 'Authorities & Citizens', color: '#ff3b3b' },
+              ].map((box, i, arr) => (
+                <g key={box.label}>
+                  {/* Box */}
+                  <rect
+                    x={box.x} y={20} width={120} height={70} rx={8}
+                    fill="url(#boxGrad)"
+                    stroke={box.color} strokeWidth={1.5}
+                  />
+                  {/* Colored top accent */}
+                  <rect x={box.x} y={20} width={120} height={3} rx={1.5} fill={box.color} />
+                  {/* Label */}
+                  <text x={box.x + 60} y={52} textAnchor="middle" fill="#e2f0ff" fontSize="12" fontWeight="700" fontFamily="Inter, sans-serif">
+                    {box.label}
+                  </text>
+                  <text x={box.x + 60} y={72} textAnchor="middle" fill="#7aa8cc" fontSize="10" fontFamily="Inter, sans-serif">
+                    {box.sub}
+                  </text>
+                  {/* Arrow to next */}
+                  {i < arr.length - 1 && (
+                    <line
+                      x1={box.x + 124} y1={55} x2={arr[i + 1].x - 4} y2={55}
+                      stroke="#00e5ff" strokeWidth={1.5} markerEnd="url(#arrowhead)"
+                      opacity={0.6}
+                    />
+                  )}
+                </g>
+              ))}
+            </svg>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* Section 2 — Data Sources Table                                 */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <Section title="📊 Data Sources" icon="📐">
+          <div className="glass" style={{ marginTop: '16px', overflowX: 'auto', borderRadius: '8px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid rgba(0,229,255,0.15)' }}>
+                  {['Satellite', 'Product', 'Bands Used', 'Index', 'Detects'].map(h => (
+                    <th key={h} style={{
+                      padding: '12px 14px', textAlign: 'left', fontWeight: 700,
+                      color: 'var(--color-primary)', fontSize: '11px',
+                      letterSpacing: '0.08em', textTransform: 'uppercase',
+                      fontFamily: 'var(--font-mono)',
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { sat: 'Sentinel-2 MSI', prod: 'L2A', bands: 'B03, B08',   idx: 'NDWI',            detects: 'Water body extent and changes',            color: '#00b4ff' },
+                  { sat: 'Sentinel-2 MSI', prod: 'L2A', bands: 'B04, B05',   idx: 'NDCI',            detects: 'Algal blooms, chlorophyll concentration',  color: '#00e87a' },
+                  { sat: 'Sentinel-2 MSI', prod: 'L2A', bands: 'B03, B04',   idx: 'Turbidity ratio', detects: 'Sediment, chemical discharge',             color: '#ff8c00' },
+                  { sat: 'Galileo GNSS',   prod: 'Positioning signal', bands: '—', idx: '—',         detects: 'Authenticated geolocation of citizen reports', color: '#a78bfa' },
+                ].map((row, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-text-1)', fontWeight: 600 }}>{row.sat}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-text-2)' }}>{row.prod}</td>
+                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', color: row.color, fontSize: '12px' }}>{row.bands}</td>
+                    <td style={{ padding: '10px 14px', fontWeight: 600, color: row.color }}>{row.idx}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-text-2)', fontSize: '12px' }}>{row.detects}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* Original detailed pipeline cards                               */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <Section title="⚙️ Data Pipeline Details" icon="🛰">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginTop: '16px' }}>
             {[
               { step: '01', title: 'Sentinel-2 L2A', desc: 'Copernicus Data Space Ecosystem pulls the latest cloud-free scene (≤20% cloud cover) over the target water body. 5-day repeat cycle.', color: '#a78bfa' },
@@ -54,7 +150,7 @@ export default function About() {
           </div>
         </Section>
 
-        {/* Indices */}
+        {/* Spectral Indices */}
         <Section title="📐 Spectral Indices" icon="📊">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
             {[
@@ -85,6 +181,49 @@ export default function About() {
                 <div style={{ fontSize: '12px', color: 'var(--color-text-2)', lineHeight: 1.5 }}>{idx.desc}</div>
               </div>
             ))}
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* Section 3 — Impact                                             */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <Section title="🎯 Impact" icon="🏛">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+            {/* Who uses this */}
+            <div className="glass" style={{ padding: '20px', borderTop: '2px solid #00e87a' }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-text-1)', marginBottom: '12px' }}>
+                Who uses this
+              </div>
+              <ul style={{ fontSize: '13px', color: 'var(--color-text-2)', lineHeight: 1.8, paddingLeft: '16px', margin: 0 }}>
+                <li><strong style={{ color: 'var(--color-text-1)' }}>ANAR</strong> (Administrația Națională Apele Române) — national water authority</li>
+                <li><strong style={{ color: 'var(--color-text-1)' }}>Garda de Mediu</strong> — environmental enforcement</li>
+                <li><strong style={{ color: 'var(--color-text-1)' }}>Local municipalities</strong> along monitored waterways</li>
+                <li><strong style={{ color: 'var(--color-text-1)' }}>Citizens</strong> living near water bodies</li>
+              </ul>
+            </div>
+
+            {/* What an alert enables */}
+            <div className="glass" style={{ padding: '20px', borderTop: '2px solid #ff8c00' }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-text-1)', marginBottom: '12px' }}>
+                What an alert enables
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-2)', lineHeight: 1.7 }}>
+                <p style={{ margin: '0 0 12px' }}>
+                  Intervention within <strong style={{ color: '#00e87a' }}>hours</strong> instead of <strong style={{ color: '#ff3b3b' }}>days</strong>.
+                </p>
+                <div className="glass" style={{ padding: '14px', borderLeft: '3px solid #ff8c00', background: 'rgba(255,140,0,0.05)' }}>
+                  <div style={{ fontSize: '11px', color: '#ff8c00', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                    Cost of a missed event
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-1)' }}>
+                    €50,000 – €500,000
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '4px' }}>
+                    in cleanup + ecosystem damage per industrial pollution event in Romania
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Section>
 
@@ -138,18 +277,22 @@ export default function About() {
           </div>
         </Section>
 
-        {/* What's next */}
-        <Section title="🚀 Phase 2 Roadmap" icon="🔭">
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* Section 4 — Future Work                                        */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <Section title="🚀 Future Work" icon="🔭">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginTop: '16px' }}>
             {[
-              { icon: '🔐', text: 'Galileo OSNMA signature verification for tamper-proof citizen reports' },
+              { icon: '⚙️', text: 'Physical in-water IoT sensors for ground truth validation' },
+              { icon: '🔐', text: 'Galileo OSNMA authenticated positioning (cryptographically verified coordinates)' },
+              { icon: '🤖', text: 'ML classification of pollution type from spectral signature' },
+              { icon: '🔗', text: 'Direct API integration with ANAR monitoring dashboard' },
+              { icon: '🛰', text: 'Sentinel-1 SAR for oil slick detection regardless of cloud cover' },
               { icon: '📱', text: 'PWA / mobile app with offline report queue' },
-              { icon: '🤖', text: 'CNN-based bloom segmentation on full Sentinel-2 scenes' },
-              { icon: '⚙️', text: 'IoT water quality sensors streaming in-situ data' },
               { icon: '🔔', text: 'SMS / email alert dispatch to water authorities' },
               { icon: '🌍', text: 'Multi-basin support: Danube, Mureș, Siret' },
             ].map(item => (
-              <div key={item.icon} className="glass" style={{ padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <div key={item.text} className="glass" style={{ padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '18px' }}>{item.icon}</span>
                 <span style={{ fontSize: '12px', color: 'var(--color-text-2)', lineHeight: 1.5 }}>{item.text}</span>
               </div>

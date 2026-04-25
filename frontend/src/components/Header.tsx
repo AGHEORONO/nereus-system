@@ -1,5 +1,6 @@
 import React from 'react';
-import { Waves, FileUp, Globe } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Waves, FileUp, Globe, Info } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
@@ -67,6 +68,17 @@ export default function Header({ onSubmitReport, citySearchNode, cityName = 'Tim
       </div>
 
       <div className="flex items-center gap-3">
+        <Link to="/about" style={{ textDecoration: 'none' }}>
+          <button
+            className="flex items-center justify-center h-10 px-3 rounded-lg transition-colors hover:bg-[rgba(0,229,255,0.05)] cursor-pointer gap-2"
+            style={{ border: '1px solid var(--glass-border)' }}
+            aria-label="About"
+          >
+            <Info className="w-4 h-4 text-cyan" />
+            <span className="font-display text-xs font-semibold text-cyan">About</span>
+          </button>
+        </Link>
+
         <button
           onClick={toggleLanguage}
           className="flex items-center justify-center h-10 px-3 rounded-lg transition-colors hover:bg-[rgba(0,229,255,0.05)] cursor-pointer gap-2"

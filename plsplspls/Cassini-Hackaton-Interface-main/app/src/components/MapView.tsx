@@ -453,23 +453,25 @@ export default function MapView({
 
     const zonesSrc = mapRef.current.getSource(ZONES_SOURCE) as maplibregl.GeoJSONSource;
     if (zonesSrc) {
+      const validZoneFeatures = zones.map(z => {
+        let geom = z.geometry;
+        if (z.geometry_geojson) {
+          try {
+            geom = typeof z.geometry_geojson === 'string' ? JSON.parse(z.geometry_geojson) : z.geometry_geojson;
+          } catch (e) {
+            console.error("Failed to parse zone geometry", e);
+          }
+        }
+        return {
+          type: 'Feature',
+          properties: z,
+          geometry: geom
+        };
+      }).filter(f => f.geometry && Array.isArray(f.geometry.coordinates) && f.geometry.coordinates.length > 0);
+
       zonesSrc.setData({
         type: 'FeatureCollection',
-        features: zones.map(z => {
-          let geom = z.geometry;
-          if (z.geometry_geojson) {
-            try {
-              geom = typeof z.geometry_geojson === 'string' ? JSON.parse(z.geometry_geojson) : z.geometry_geojson;
-            } catch (e) {
-              console.error("Failed to parse zone geometry", e);
-            }
-          }
-          return {
-            type: 'Feature',
-            properties: z,
-            geometry: geom || { type: "Polygon", coordinates: [] }
-          };
-        })
+        features: validZoneFeatures as GeoJSON.Feature[]
       });
     }
   }, [satelliteData, zones, mapLoaded]);
@@ -591,7 +593,7 @@ export default function MapView({
         width:${size}px;height:${size}px;border-radius:50%;
         background:${color};box-shadow:0 0 ${isSelected ? 12 : 8}px ${color}80;
         border:2px solid ${isSelected ? '#fff' : 'rgba(6,10,20,.6)'};
-        transition:all .2s ease;
+        transition:transform .2s ease, box-shadow .2s ease;
       `;
 
       el.appendChild(outer);

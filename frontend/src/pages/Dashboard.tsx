@@ -6,8 +6,10 @@ import AlertsPanel from '../components/AlertsPanel/AlertsPanel'
 import ReportModal from '../components/ReportModal/ReportModal'
 import Header from '../components/Header'
 import LocationSearch from '../components/LocationSearch'
+import DrawZoneButton from '../components/DrawZone/DrawZoneButton'
+import SubscribeModal from '../components/SubscribeModal'
 import { useNereusStore } from '../store/useNereusStore'
-import { useAlerts, useReports, useHeatmap, useScan } from '../hooks/useNereusQueries'
+import { useAlerts, useReports, useHeatmap, useScan, useZones } from '../hooks/useNereusQueries'
 import type { BoundingBox } from '../types/geo'
 import type { CitizenReport } from '../types'
 
@@ -42,6 +44,7 @@ export default function Dashboard() {
   const { data: reports = [], isError: reportsErr } = useReports()
   const { data: heatmap = null } = useHeatmap(DATES[dateIndex], currentBbox)
   const scanMutation = useScan()
+  const { data: zones = [], refetch: refetchZones } = useZones()
 
   // Local reports (appear instantly, expire after 60s)
   const [localReports, setLocalReports] = useState<CitizenReport[]>([])
@@ -118,6 +121,12 @@ export default function Dashboard() {
   // Toggle for heatmap layer
   const [showHeatmap, setShowHeatmap] = useState(true)
 
+  // Subscribe modal
+  const [subscribeOpen, setSubscribeOpen] = useState(false)
+
+  // Map ref for DrawZone
+  const mapRef = useRef<any>(null)
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Full-bleed map */}
@@ -127,11 +136,14 @@ export default function Dashboard() {
         heatmap={showHeatmap ? displayHeatmap : null}
         cityBbox={activeBbox}
         localReports={localReports}
+        zones={zones}
+        onMapRefReady={(ref: any) => { mapRef.current = ref }}
       />
 
       {/* Header */}
       <Header
         onSubmitReport={() => setReportModalOpen(true)}
+        onSubscribe={() => setSubscribeOpen(true)}
         cityName={cityName}
         citySearchNode={<LocationSearch onSelect={handleSearchSelect} />}
         scanning={scanning}
@@ -251,6 +263,14 @@ export default function Dashboard() {
         onClose={() => setReportModalOpen(false)}
         onSubmitted={handleReportSubmitted}
       />
+
+      {/* Subscribe modal */}
+      <SubscribeModal open={subscribeOpen} onClose={() => setSubscribeOpen(false)} />
+
+      {/* Draw zone tool */}
+      {mapRef.current && (
+        <DrawZoneButton mapRef={mapRef} onZoneSaved={() => refetchZones()} />
+      )}
 
       {/* Keyframes for toast */}
       <style>{`

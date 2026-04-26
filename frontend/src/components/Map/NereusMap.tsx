@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import type { Alert, CitizenReport, HeatmapCollection } from '../../types'
+import type { Alert, CitizenReport, HeatmapCollection, MonitoringZone } from '../../types'
 import type { BoundingBox } from '../../types/geo'
 import { useNereusStore } from '../../store/useNereusStore'
 
@@ -17,9 +17,11 @@ interface Props {
   heatmap: HeatmapCollection | null
   cityBbox?: BoundingBox
   localReports?: CitizenReport[]
+  zones?: MonitoringZone[]
+  onMapRefReady?: (map: maplibregl.Map) => void
 }
 
-export default function NereusMap({ alerts, reports, heatmap, cityBbox, localReports = [] }: Props) {
+export default function NereusMap({ alerts, reports, heatmap, cityBbox, localReports = [], zones = [], onMapRefReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const alertMarkersRef = useRef<{id: number, marker: maplibregl.Marker}[]>([])
@@ -74,6 +76,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
 
     mapRef.current = map
     useNereusStore.getState().setMapRef(map)
+    if (onMapRefReady) onMapRefReady(map)
     
     return () => { 
       map.remove()
@@ -316,6 +319,79 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
       map.once('load', onReady)
     }
   }, [])
+
+  // ── Render monitoring zones ─────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const sourceId = 'monitoring-zones'
+    const fillId = 'zones-fill'
+    const borderId = 'zones-border'
+
+    const geojson: any = {
+      type: 'FeatureCollection',
+      features: zones.map(z => {
+        try {
+          return {
+            type: 'Feature',
+            properties: { id: z.id, name: z.name, created_at: z.created_at },
+            geometry: JSON.parse(z.geometry_geojson),
+          }
+        } catch {
+          return null
+        }
+      }).filter(Boolean),
+    }
+
+    const addLayers = () => {
+      if (map.getSource(sourceId)) {
+        (map.getSource(sourceId) as any).setData(geojson)
+        return
+      }
+
+      map.addSource(sourceId, { type: 'geojson', data: geojson })
+      map.addLayer({
+        id: fillId,
+        type: 'fill',
+        source: sourceId,
+        paint: { 'fill-color': '#22d3ee', 'fill-opacity': 0.12 },
+      })
+      map.addLayer({
+        id: borderId,
+        type: 'line',
+        source: sourceId,
+        paint: { 'line-color': '#22d3ee', 'line-width': 2, 'line-dasharray': [3, 2] },
+      })
+
+      map.on('click', fillId, (e: any) => {
+        const f = e.features?.[0]
+        if (!f) return
+        const name = f.properties.name
+        const id = f.properties.id
+        const date = f.properties.created_at ? new Date(f.properties.created_at).toLocaleDateString() : ''
+        const base = (import.meta as any).env?.VITE_API_BASE_URL ?? ''
+        new maplibregl.Popup({ offset: 10 })
+          .setLngLat(e.lngLat)
+          .setHTML(`
+            <div style="font-family:Inter,sans-serif;font-size:13px;min-width:160px">
+              <div style="font-weight:700;color:#e2f0ff;margin-bottom:4px">\u{1F4CD} ${name}</div>
+              <div style="font-size:11px;color:#7aa8cc;margin-bottom:8px">Created: ${date}</div>
+              <button onclick="fetch('${base}/api/zones/${id}',{method:'DELETE'}).then(()=>window.location.reload())"
+                style="padding:4px 10px;border-radius:4px;border:1px solid rgba(255,100,100,0.3);background:rgba(255,100,100,0.1);color:#ff6b6b;font-size:11px;cursor:pointer;font-weight:600">
+                \u{1F5D1}\u{FE0F} Delete Zone
+              </button>
+            </div>
+          `)
+          .addTo(map)
+      })
+      map.on('mouseenter', fillId, () => { map.getCanvas().style.cursor = 'pointer' })
+      map.on('mouseleave', fillId, () => { map.getCanvas().style.cursor = '' })
+    }
+
+    if (map.isStyleLoaded()) addLayers()
+    else map.once('styledata', addLayers)
+  }, [zones])
 
   const showBackBtn = useNereusStore(s => s.showBackBtn)
   const prevViewport = useNereusStore(s => s.prevViewport)

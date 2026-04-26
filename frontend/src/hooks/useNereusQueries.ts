@@ -3,9 +3,9 @@
  * Falls back to static seed data when the backend is unreachable.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAlerts, getReports, getHeatmap, triggerScan, getHealth, submitReport, upvoteReport, downvoteReport } from '../api/client'
+import { getAlerts, getReports, getHeatmap, triggerScan, getHealth, submitReport, upvoteReport, downvoteReport, getZones, createZone, deleteZone, subscribe, getSubscriberCount } from '../api/client'
 import { FALLBACK_ALERTS, FALLBACK_REPORTS, FALLBACK_HEATMAP } from '../data/fallback'
-import type { ScanRequest, ReportPayload } from '../api/client'
+import type { ScanRequest, ReportPayload, CreateZonePayload, SubscribePayload } from '../api/client'
 import type { BoundingBox } from '../types/geo'
 
 // ── Alerts ───────────────────────────────────────────────────────────────────
@@ -106,5 +106,53 @@ export function useSubmitReport() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['reports'] })
     },
+  })
+}
+
+// ── Zones ────────────────────────────────────────────────────────────────────
+
+export function useZones() {
+  return useQuery({
+    queryKey: ['zones'],
+    queryFn: getZones,
+    refetchInterval: 60_000,
+    placeholderData: [],
+  })
+}
+
+export function useCreateZone() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: CreateZonePayload) => createZone(payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['zones'] })
+    },
+  })
+}
+
+export function useDeleteZone() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deleteZone(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['zones'] })
+    },
+  })
+}
+
+// ── Subscribe ────────────────────────────────────────────────────────────────
+
+export function useSubscribe() {
+  return useMutation({
+    mutationFn: (payload: SubscribePayload) => subscribe(payload),
+  })
+}
+
+export function useSubscriberCount() {
+  return useQuery({
+    queryKey: ['subscriberCount'],
+    queryFn: getSubscriberCount,
+    refetchInterval: 30_000,
+    placeholderData: { count: 0 },
   })
 }

@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FileUp, Globe, Info } from 'lucide-react';
+import { FileUp, Globe, Info, Bell } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
   onSubmitReport: () => void;
+  onSubscribe?: () => void;
   citySearchNode?: React.ReactNode;
   cityName?: string;
   scanning?: boolean;
@@ -14,7 +15,7 @@ interface HeaderProps {
   onToggleHeatmap?: () => void;
 }
 
-export default function Header({ onSubmitReport, citySearchNode, scanning, onScan, lastScanResult, showHeatmap, onToggleHeatmap }: HeaderProps) {
+export default function Header({ onSubmitReport, onSubscribe, citySearchNode, scanning, onScan, lastScanResult, showHeatmap, onToggleHeatmap }: HeaderProps) {
   const { t, language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
@@ -134,6 +135,22 @@ export default function Header({ onSubmitReport, citySearchNode, scanning, onSca
           <FileUp className="w-4 h-4" />
           {t('action.submitReport')}
         </button>
+
+        {onSubscribe && (
+          <button
+            id="subscribe-btn"
+            onClick={onSubscribe}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-display text-sm font-medium transition-all duration-300 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,200,0,0.12), rgba(255,200,0,0.04))',
+              border: '1px solid rgba(255,200,0,0.25)',
+              color: '#ffd700',
+            }}
+          >
+            <Bell className="w-4 h-4" />
+            Get Alerts
+          </button>
+        )}
       </div>
     </header>
   );

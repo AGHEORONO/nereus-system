@@ -5,7 +5,7 @@
  * Base URL from VITE_API_BASE_URL env var (defaults to same origin in prod).
  */
 
-import type { Alert, CitizenReport, HeatmapCollection, ScanResponse } from '../types'
+import type { Alert, CitizenReport, HeatmapCollection, ScanResponse, MonitoringZone, Subscriber } from '../types'
 import type { BoundingBox } from '../types/geo'
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -114,4 +114,59 @@ export interface HealthResponse {
 export async function getHealth(): Promise<HealthResponse> {
   const res = await fetch(`${BASE}/api/health/`)
   return json<HealthResponse>(res)
+}
+
+// ── Zones ────────────────────────────────────────────────────────────────────
+
+export async function getZones(): Promise<MonitoringZone[]> {
+  const res = await fetch(`${BASE}/api/zones/`)
+  return json<MonitoringZone[]>(res)
+}
+
+export interface CreateZonePayload {
+  name: string
+  geometry_geojson: string
+  created_by_email?: string
+}
+
+export async function createZone(payload: CreateZonePayload): Promise<MonitoringZone> {
+  const res = await fetch(`${BASE}/api/zones/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return json<MonitoringZone>(res)
+}
+
+export async function deleteZone(id: number): Promise<void> {
+  await fetch(`${BASE}/api/zones/${id}`, { method: 'DELETE' })
+}
+
+// ── Subscriptions ────────────────────────────────────────────────────────────
+
+export interface SubscribePayload {
+  email: string
+  name?: string
+  home_city: string
+  home_lat: number
+  home_lon: number
+  notification_type?: string
+}
+
+export async function subscribe(payload: SubscribePayload): Promise<Subscriber> {
+  const res = await fetch(`${BASE}/api/subscribe`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return json<Subscriber>(res)
+}
+
+export async function unsubscribe(token: string): Promise<void> {
+  await fetch(`${BASE}/api/subscribe/${token}`, { method: 'DELETE' })
+}
+
+export async function getSubscriberCount(): Promise<{ count: number }> {
+  const res = await fetch(`${BASE}/api/subscribers/count`)
+  return json<{ count: number }>(res)
 }

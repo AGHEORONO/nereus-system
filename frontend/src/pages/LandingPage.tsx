@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LocationSearch from '../components/LocationSearch';
 import { useNereusStore } from '../store/useNereusStore';
+import { useSubscriberCount } from '../hooks/useNereusQueries';
 import type { BoundingBox } from '../types/geo';
 
 const QUICK_PICKS = [
@@ -15,6 +16,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const setLocation = useNereusStore((s) => s.setLocation);
   const setLocationBbox = useNereusStore((s) => s.setLocationBbox);
+  const { data: subCount } = useSubscriberCount();
 
   const goToDashboard = (name: string, lat: number, lon: number, bbox?: BoundingBox) => {
     setLocation(name, lat, lon);
@@ -119,6 +121,20 @@ export default function LandingPage() {
           </button>
         ))}
       </div>
+
+      {/* Subscriber count */}
+      {subCount && subCount.count > 0 && (
+        <div style={{
+          marginTop: '16px',
+          fontSize: '12px',
+          color: '#5a8ab5',
+          fontFamily: 'Inter, sans-serif',
+          opacity: 0,
+          animation: 'fadeSlideUp 0.6s ease-out 0.65s forwards',
+        }}>
+          🌍 {subCount.count} {subCount.count === 1 ? 'person' : 'people'} monitoring European waterways
+        </div>
+      )}
 
       {/* Footer */}
       <div style={{

@@ -75,3 +75,28 @@ export interface ScanResponse {
     anomaly_area_ha: number
   }
 }
+
+export interface MonitoringZone {
+  id: number
+  created_at: string
+  name: string
+  geometry_geojson: string
+  centroid_lat: number
+  centroid_lon: number
+  created_by_email?: string | null
+  active: boolean
+}
+
+export interface Subscriber {
+  id: number
+  created_at: string
+  email: string
+  name?: string | null
+  home_city: string
+  home_lat: number
+  home_lon: number
+  alert_radius_km: number
+  notification_type: string
+  active: boolean
+  unsubscribe_token: string
+}

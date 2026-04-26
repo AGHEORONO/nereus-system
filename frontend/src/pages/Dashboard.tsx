@@ -9,84 +9,7 @@ import LocationSearch from '../components/LocationSearch'
 import { useNereusStore } from '../store/useNereusStore'
 import { useAlerts, useReports, useHeatmap, useHealth, useScan } from '../hooks/useNereusQueries'
 import type { BoundingBox } from '../types/geo'
-import type { Alert, CitizenReport } from '../types'
-
-// Last 5 Sentinel-2 pass dates (5-day repeat cycle, oldest → newest)
-function last5Dates(): string[] {
-  const dates: string[] = []
-  const d = new Date()
-  for (let i = 4; i >= 0; i--) {
-    const dd = new Date(d)
-    dd.setDate(dd.getDate() - i * 5)
-    dates.push(dd.toISOString().slice(0, 10))
-  }
-  return dates
-}
-const DATES = last5Dates()
-
-// Generate demo alerts for any location (so every city shows data)
-function generateDemoAlerts(lat: number, lon: number, cityName: string): Alert[] {
-  const now = new Date()
-  const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000).toISOString()
-  const types: Array<{ type: Alert['pollution_type']; label: string }> = [
-    { type: 'TURBIDITY', label: 'Elevated turbidity detected' },
-    { type: 'ALGAL_BLOOM', label: 'Potential algal bloom' },
-    { type: 'CHEMICAL', label: 'Anomalous spectral signature' },
-  ]
-  return [
-    {
-      id: 9001,
-      timestamp: daysAgo(2),
-      lat: lat + 0.003,
-      lon: lon - 0.005,
-      ndci_max: 0.14,
-      turbidity_max: 1.35,
-      severity: 'HIGH' as const,
-      pollution_type: types[0].type,
-      area_ha: 8.2,
-      source: 'satellite' as const,
-      scene_date: DATES[4],
-      description: `${types[0].label} near ${cityName}. Sentinel-2 L2A analysis shows anomalous red/green ratio (1.35). Area: ~8.2 ha.`,
-      ml_confidence: 94,
-      ml_pollution_type: 'turbidity',
-      ml_model: 'IsolationForest',
-    },
-    {
-      id: 9002,
-      timestamp: daysAgo(7),
-      lat: lat - 0.004,
-      lon: lon + 0.008,
-      ndci_max: 0.08,
-      turbidity_max: 1.22,
-      severity: 'MEDIUM' as const,
-      pollution_type: types[1].type,
-      area_ha: 4.5,
-      source: 'satellite' as const,
-      scene_date: DATES[3],
-      description: `${types[1].label} upstream of ${cityName}. NDCI value 0.08 exceeds threshold. Monitoring recommended.`,
-      ml_confidence: 68,
-      ml_pollution_type: 'algal_bloom',
-      ml_model: 'IsolationForest',
-    },
-    {
-      id: 9003,
-      timestamp: daysAgo(12),
-      lat: lat + 0.006,
-      lon: lon + 0.003,
-      ndci_max: 0.03,
-      turbidity_max: 1.16,
-      severity: 'LOW' as const,
-      pollution_type: types[2].type,
-      area_ha: 2.1,
-      source: 'satellite' as const,
-      scene_date: DATES[2],
-      description: `${types[2].label} detected in ${cityName} region. Low-severity, consistent with post-rain sediment load.`,
-      ml_confidence: 25,
-      ml_pollution_type: 'normal',
-      ml_model: 'IsolationForest',
-    },
-  ]
-}
+import type { CitizenReport } from '../types'
 
 export default function Dashboard() {
   // Global UI state via zustand
@@ -98,6 +21,13 @@ export default function Dashboard() {
     dateIndex, setDateIndex,
     scanning, setScan, lastScanResult, setLastScanResult,
   } = useNereusStore()
+
+  // Last 5 Sentinel-2 pass dates (5-day repeat cycle, oldest → newest)
+  const DATES = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (4 - i) * 5)
+    return d.toISOString().slice(0, 10)
+  })
 
   // TanStack Query data
   const { data: alerts = [], isError: alertsErr } = useAlerts()
@@ -112,19 +42,12 @@ export default function Dashboard() {
 
   // Defaults
   const cityName = selectedLocation?.name || 'Timișoara'
-  const isTimisoara = cityName.toLowerCase().includes('timi') || cityName.toLowerCase().includes('bega')
   const activeBbox = locationBbox || { west: 21.15, south: 45.72, east: 21.35, north: 45.78 }
 
-  // For non-Timișoara locations, generate demo alerts
-  const displayAlerts = isTimisoara
-    ? alerts
-    : generateDemoAlerts(
-        selectedLocation?.lat || 45.752,
-        selectedLocation?.lon || 21.23,
-        cityName
-      )
-  const displayReports = isTimisoara ? reports : []
-  const displayHeatmap = isTimisoara ? heatmap : null
+  // Use real data globally (no demo restrictions)
+  const displayAlerts = alerts
+  const displayReports = reports
+  const displayHeatmap = heatmap
   const offline = alertsErr || reportsErr
 
   const handleScan = useCallback(async () => {

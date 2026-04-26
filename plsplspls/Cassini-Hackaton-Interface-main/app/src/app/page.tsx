@@ -149,9 +149,15 @@ export default function DashboardPage() {
       // Fetch precise water data for the new bounds
       try {
         const newData = await fetchCityWaterData(bbox);
-        setDynamicSatelliteData(newData);
+        if (newData.features.length > 0) {
+          setDynamicSatelliteData(newData);
+        } else {
+          console.warn("Overpass returned no features, falling back to local satellite data");
+          setDynamicSatelliteData(satelliteData as GeoJSON.FeatureCollection);
+        }
       } catch (err) {
         console.error("Failed to fetch overpass data", err);
+        setDynamicSatelliteData(satelliteData as GeoJSON.FeatureCollection);
       }
     },
     []

@@ -136,6 +136,36 @@ export default function LandingPage() {
         </div>
       )}
 
+      {/* Demo Link */}
+      <div style={{
+        marginTop: '32px',
+        opacity: 0,
+        animation: 'fadeSlideUp 0.6s ease-out 0.8s forwards',
+      }}>
+        <button
+          onClick={() => navigate('/demo')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(34,211,238,0.2), rgba(0,119,255,0.2))',
+            border: '1px solid rgba(34,211,238,0.4)',
+            color: '#22d3ee',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(34,211,238,0.3), rgba(0,119,255,0.3))'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(34,211,238,0.2), rgba(0,119,255,0.2))'
+          }}
+        >
+          View Live Demo →
+        </button>
+      </div>
+
       {/* Footer */}
       <div style={{
         position: 'absolute', bottom: '24px', left: 0, right: 0,

@@ -100,3 +100,18 @@ export interface Subscriber {
   active: boolean
   unsubscribe_token: string
 }
+
+export interface MLAnalyzeRequest {
+  ndwi: number
+  ndci: number
+  turbidity: number
+}
+
+export interface MLAnalyzeResponse {
+  is_anomaly: boolean
+  anomaly_score: number
+  confidence: number
+  pollution_type: string
+  ml_model: string
+  features: Record<string, number>
+}

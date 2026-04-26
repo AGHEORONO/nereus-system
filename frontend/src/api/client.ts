@@ -5,7 +5,7 @@
  * Base URL from VITE_API_BASE_URL env var (defaults to same origin in prod).
  */
 
-import type { Alert, CitizenReport, HeatmapCollection, ScanResponse, MonitoringZone, Subscriber } from '../types'
+import type { Alert, CitizenReport, HeatmapCollection, ScanResponse, MonitoringZone, Subscriber, MLAnalyzeRequest, MLAnalyzeResponse } from '../types'
 import type { BoundingBox } from '../types/geo'
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -169,4 +169,15 @@ export async function unsubscribe(token: string): Promise<void> {
 export async function getSubscriberCount(): Promise<{ count: number }> {
   const res = await fetch(`${BASE}/api/subscribers/count`)
   return json<{ count: number }>(res)
+}
+
+// ── ML Analysis ──────────────────────────────────────────────────────────────
+
+export async function analyzeML(payload: MLAnalyzeRequest): Promise<MLAnalyzeResponse> {
+  const res = await fetch(`${BASE}/api/ml/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return json<MLAnalyzeResponse>(res)
 }

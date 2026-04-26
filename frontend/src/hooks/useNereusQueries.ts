@@ -3,9 +3,10 @@
  * Falls back to static seed data when the backend is unreachable.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAlerts, getReports, getHeatmap, triggerScan, getHealth, submitReport, upvoteReport, downvoteReport, getZones, createZone, deleteZone, subscribe, getSubscriberCount } from '../api/client'
+import { getAlerts, getReports, getHeatmap, triggerScan, getHealth, submitReport, upvoteReport, downvoteReport, getZones, createZone, deleteZone, subscribe, getSubscriberCount, analyzeML } from '../api/client'
 import { FALLBACK_ALERTS, FALLBACK_REPORTS, FALLBACK_HEATMAP } from '../data/fallback'
 import type { ScanRequest, ReportPayload, CreateZonePayload, SubscribePayload } from '../api/client'
+import type { MLAnalyzeRequest } from '../types'
 import type { BoundingBox } from '../types/geo'
 
 // ── Alerts ───────────────────────────────────────────────────────────────────
@@ -154,5 +155,13 @@ export function useSubscriberCount() {
     queryFn: getSubscriberCount,
     refetchInterval: 30_000,
     placeholderData: { count: 0 },
+  })
+}
+
+// ── ML Analysis ──────────────────────────────────────────────────────────────
+
+export function useAnalyzeML() {
+  return useMutation({
+    mutationFn: (payload: MLAnalyzeRequest) => analyzeML(payload),
   })
 }

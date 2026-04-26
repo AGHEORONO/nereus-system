@@ -260,6 +260,7 @@ export default function DrawZoneButton({ mapRef, onZoneSaved }: Props) {
               <input
                 value={zoneName}
                 onChange={e => setZoneName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
                 placeholder="e.g. Bega River Sector A"
                 style={{
                   width: '100%',
@@ -281,6 +282,7 @@ export default function DrawZoneButton({ mapRef, onZoneSaved }: Props) {
               <input
                 value={zoneEmail}
                 onChange={e => setZoneEmail(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
                 placeholder="you@example.com"
                 type="email"
                 style={{

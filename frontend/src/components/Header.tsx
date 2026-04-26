@@ -112,6 +112,16 @@ export default function Header({ onSubmitReport, onSubscribe, citySearchNode, sc
           </button>
         </Link>
 
+        <Link to="/demo" style={{ textDecoration: 'none' }}>
+          <button
+            className="flex items-center justify-center h-10 px-3 rounded-lg transition-colors hover:bg-[rgba(0,229,255,0.05)] cursor-pointer gap-2"
+            style={{ border: '1px solid var(--glass-border)' }}
+            aria-label="Demo"
+          >
+            <span className="font-display text-xs font-semibold text-cyan">Demo</span>
+          </button>
+        </Link>
+
         <button
           onClick={toggleLanguage}
           className="flex items-center justify-center h-10 px-3 rounded-lg transition-colors hover:bg-[rgba(0,229,255,0.05)] cursor-pointer gap-2"

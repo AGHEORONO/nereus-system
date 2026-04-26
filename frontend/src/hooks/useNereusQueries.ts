@@ -85,10 +85,14 @@ export function useScan() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (req: ScanRequest) => triggerScan(req),
-    onSuccess: () => {
-      // Invalidate alerts + heatmap so map refreshes automatically
+    onSuccess: (data) => {
+      // Inject the REAL heatmap from the scan response into the query cache
+      // instead of invalidating (which would refetch the synthetic /api/heatmap)
+      if (data.heatmap) {
+        qc.setQueriesData({ queryKey: ['heatmap'] }, data.heatmap)
+      }
+      // Refresh alerts to show newly created satellite alerts
       void qc.invalidateQueries({ queryKey: ['alerts'] })
-      void qc.invalidateQueries({ queryKey: ['heatmap'] })
     },
   })
 }

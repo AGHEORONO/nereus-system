@@ -24,7 +24,7 @@ def compute_ndwi(b03: NDArray, b08: NDArray) -> NDArray:
     return np.where(denom != 0, (b03 - b08) / denom, 0.0)
 
 
-def water_mask(ndwi: NDArray, threshold: float = -0.1) -> NDArray:
+def water_mask(ndwi: NDArray, threshold: float = 0.1) -> NDArray:
     """Return boolean mask: True where pixels are water (NDWI > threshold)."""
     return ndwi > threshold
 

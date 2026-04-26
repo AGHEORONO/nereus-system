@@ -13,7 +13,7 @@ import SubscribeModal from '@/components/SubscribeModal';
 import SatelliteLayerControl from '@/components/SatelliteLayerControl';
 import DynamicLegend from '@/components/DynamicLegend';
 import { BoundingBox, fetchCityWaterData } from '@/services/overpassService';
-import { mockAlerts, getTimeRange, filterAlertsByDate, generateMockAlertsForCity, WaterAlert } from '@/data/mockData';
+import { mockAlerts, getTimeRange, filterAlertsByDate, generateMockAlertsForCity, generateMockSatelliteDataForCity, WaterAlert } from '@/data/mockData';
 import { SatelliteLayerId } from '@/data/satelliteTypes';
 import satelliteData from '@/data/satelliteData.json';
 import { api } from '@/services/nereusApi';
@@ -152,12 +152,12 @@ export default function DashboardPage() {
         if (newData.features.length > 0) {
           setDynamicSatelliteData(newData);
         } else {
-          console.warn("Overpass returned no features, falling back to local satellite data");
-          setDynamicSatelliteData(satelliteData as GeoJSON.FeatureCollection);
+          console.warn("Overpass returned no features, generating fake satellite data for " + cityName);
+          setDynamicSatelliteData(generateMockSatelliteDataForCity(bbox, cityName));
         }
       } catch (err) {
         console.error("Failed to fetch overpass data", err);
-        setDynamicSatelliteData(satelliteData as GeoJSON.FeatureCollection);
+        setDynamicSatelliteData(generateMockSatelliteDataForCity(bbox, cityName));
       }
     },
     []

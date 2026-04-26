@@ -111,7 +111,7 @@ function ndwiOutlineColor() {
  */
 function ndviFillColor() {
   return [
-    'step', ['get', 'ndvi_water'],
+    'step', ['coalesce', ['get', 'ndvi_water'], ['get', 'ndvi'], 0],
     // Below 0.15: bare silt/dark waste (deepest brown)
     'rgba(110,  55,  15, 0.80)',
     0.15, 'rgba(139,  69,  19, 0.78)',   // 0.15–0.30 silt (#8B4513 family)
@@ -125,7 +125,7 @@ function ndviFillColor() {
 function ndviOutlineColor() {
   // Greenish outline for algae zones, brownish for silt
   return [
-    'step', ['get', 'ndvi_water'],
+    'step', ['coalesce', ['get', 'ndvi_water'], ['get', 'ndvi'], 0],
     'rgba(100, 50, 10, 0.6)',
     0.50, 'rgba(44, 139, 40, 0.7)',
   ];

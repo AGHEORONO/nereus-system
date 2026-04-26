@@ -144,8 +144,8 @@ def _fetch_openeo(
 
         rows, cols = np.mgrid[0 : src.height, 0 : src.width]
         xs, ys = rasterio.transform.xy(src.transform, rows, cols)
-        lons = np.array(xs, dtype=np.float32)
-        lats = np.array(ys, dtype=np.float32)
+        lons = np.array(xs, dtype=np.float32).reshape((src.height, src.width))
+        lats = np.array(ys, dtype=np.float32).reshape((src.height, src.width))
 
     tmp_path.unlink(missing_ok=True)
 

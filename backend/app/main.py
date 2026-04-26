@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, health, heatmap, reports, scan, ml
+from app.api import alerts, health, heatmap, reports, scan, ml, zones, subscriptions
 from app.config import settings
 from app.database import create_db_and_tables
 
@@ -66,6 +66,8 @@ app.include_router(alerts.router)
 app.include_router(reports.router)
 app.include_router(heatmap.router)
 app.include_router(ml.router)
+app.include_router(zones.router)
+app.include_router(subscriptions.router)
 
 
 @app.get("/")

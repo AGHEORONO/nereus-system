@@ -1,6 +1,7 @@
-"""SQLModel table definitions for alerts and citizen reports."""
+"""SQLModel table definitions for alerts, citizen reports, zones, and subscribers."""
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Optional
@@ -62,3 +63,31 @@ class CitizenReport(SQLModel, table=True):
     image_data: Optional[str] = None
     upvotes: int = Field(default=0)
     downvotes: int = Field(default=0)
+
+
+class MonitoringZone(SQLModel, table=True):
+    """User-drawn polygon zone for targeted pollution monitoring."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    name: str
+    geometry_geojson: str  # GeoJSON polygon string
+    centroid_lat: float
+    centroid_lon: float
+    created_by_email: Optional[str] = None
+    active: bool = Field(default=True)
+
+
+class Subscriber(SQLModel, table=True):
+    """Email subscriber for pollution alerts within a radius of their home city."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    email: str = Field(index=True)
+    name: Optional[str] = None
+    home_city: str
+    home_lat: float
+    home_lon: float
+    alert_radius_km: float = Field(default=50.0)
+    notification_type: str = Field(default="immediate")  # "immediate" | "daily_digest"
+    active: bool = Field(default=True)
+    unsubscribe_token: str = Field(default_factory=lambda: str(uuid.uuid4()))
+

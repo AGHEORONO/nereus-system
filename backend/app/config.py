@@ -31,5 +31,9 @@ class Settings(BaseSettings):
     # CORS origins — use "*" for the demo
     cors_origins: str = "*"
 
+    # Resend email service
+    resend_api_key: str = ""
+    frontend_url: str = "https://nereus-system.vercel.app"
+
 
 settings = Settings()

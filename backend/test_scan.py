@@ -1,17 +1,12 @@
 import requests
-
-data = {
-    "west": 21.15,
-    "south": 45.72,
-    "east": 21.35,
-    "north": 45.78,
-    "start_date": "2025-04-01",
-    "end_date": "2025-04-26"
-}
+import json
 try:
-    print("Triggering real scan...")
-    resp = requests.post("http://localhost:8000/api/scan/", json=data)
-    print(f"Status: {resp.status_code}")
-    print(resp.json())
+    res = requests.post("http://localhost:8000/api/scan/", json={"west":21.2,"south":45.7,"east":21.3,"north":45.8,"start_date":"2024-08-01","end_date":"2024-08-31"})
+    print("Status:", res.status_code)
+    data = res.json()
+    alerts = data.get("alerts", [])
+    print("Found alerts:", len(alerts))
+    for a in alerts:
+        print("Alert ML:", a.get("ml_confidence"), a.get("ml_pollution_type"))
 except Exception as e:
-    print(f"Error: {e}")
+    print(e)

@@ -155,6 +155,45 @@ def run_scan(
 
     heatmap = _build_heatmap_geojson(ndci, turb, wmask, bands["lats"], bands["lons"])
 
+    # ── Email notifications (non-blocking) ────────────────────────────────
+    try:
+        from app.services.email_service import notify_subscribers_near_alert
+        from app.models import MonitoringZone
+        from shapely.geometry import shape as shp_shape, Point
+        import json as _json
+
+        total_sent = 0
+        for aid in alert_ids:
+            a_obj = session.get(Alert, aid)
+            if not a_obj:
+                continue
+            alert_dict = {
+                "lat": a_obj.lat,
+                "lon": a_obj.lon,
+                "pollution_type": a_obj.pollution_type.value if hasattr(a_obj.pollution_type, 'value') else str(a_obj.pollution_type),
+                "severity": a_obj.severity.value if hasattr(a_obj.severity, 'value') else str(a_obj.severity),
+                "area_ha": a_obj.area_ha,
+                "ml_confidence": a_obj.ml_confidence,
+            }
+            total_sent += notify_subscribers_near_alert(alert_dict, session)
+
+            # Check monitoring zones
+            alert_point = Point(a_obj.lon, a_obj.lat)
+            zone_stmt = select(MonitoringZone).where(MonitoringZone.active == True)  # noqa: E712
+            zones = session.exec(zone_stmt).all()
+            for zone in zones:
+                try:
+                    polygon = shp_shape(_json.loads(zone.geometry_geojson))
+                    if polygon.contains(alert_point):
+                        notify_subscribers_near_alert(alert_dict, session)
+                except Exception as ze:
+                    logger.warning("Zone check failed for zone %s: %s", zone.id, ze)
+
+        if total_sent > 0:
+            logger.info("Sent %d alert email(s) to subscribers.", total_sent)
+    except Exception as email_exc:
+        logger.warning("Email notification failed (non-fatal): %s", email_exc)
+
     return ScanResponse(
         scene_date=bands["scene_date"],
         scene_source="synthetic" if used_demo else "copernicus",

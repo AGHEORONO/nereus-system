@@ -83,3 +83,19 @@ export const FALLBACK_REPORTS: CitizenReport[] = [
     downvotes: 0,
   },
 ]
+
+export const FALLBACK_HEATMAP = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [21.2847, 45.7552] },
+      properties: { pollution: 0.85 },
+    },
+    {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [21.6471, 45.5512] },
+      properties: { pollution: 0.65 },
+    },
+  ],
+}

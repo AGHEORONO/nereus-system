@@ -4,7 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAlerts, getReports, getHeatmap, triggerScan, getHealth, submitReport, upvoteReport, downvoteReport } from '../api/client'
-import { FALLBACK_ALERTS, FALLBACK_REPORTS } from '../data/fallback'
+import { FALLBACK_ALERTS, FALLBACK_REPORTS, FALLBACK_HEATMAP } from '../data/fallback'
 import type { ScanRequest, ReportPayload } from '../api/client'
 import type { BoundingBox } from '../types/geo'
 
@@ -21,6 +21,7 @@ export function useAlerts() {
 }
 
 // ── Reports ──────────────────────────────────────────────────────────────────
+// ── Reports ────────────────────────────────────────────────────────────────
 
 export function useReports() {
   return useQuery({
@@ -41,6 +42,7 @@ export function useHeatmap(date: string, bbox?: BoundingBox | null) {
     staleTime: 5 * 60_000,
     retry: 1,
     enabled: !!bbox,
+    placeholderData: FALLBACK_HEATMAP as any,
   })
 }
 

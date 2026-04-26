@@ -55,3 +55,35 @@ def list_reports(
     """Return citizen reports, newest first."""
     stmt = select(CitizenReport).order_by(CitizenReport.timestamp.desc()).limit(limit)  # type: ignore[arg-type]
     return list(session.exec(stmt).all())
+
+from fastapi import HTTPException
+
+@router.post("/{report_id}/upvote", response_model=CitizenReport)
+def upvote_report(
+    report_id: int,
+    session: Annotated[Session, Depends(get_session)],
+) -> CitizenReport:
+    """Upvote a citizen report."""
+    report = session.get(CitizenReport, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    report.upvotes += 1
+    session.add(report)
+    session.commit()
+    session.refresh(report)
+    return report
+
+@router.post("/{report_id}/downvote", response_model=CitizenReport)
+def downvote_report(
+    report_id: int,
+    session: Annotated[Session, Depends(get_session)],
+) -> CitizenReport:
+    """Downvote a citizen report."""
+    report = session.get(CitizenReport, report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    report.downvotes += 1
+    session.add(report)
+    session.commit()
+    session.refresh(report)
+    return report

@@ -7,9 +7,12 @@ interface HeaderProps {
   onSubmitReport: () => void;
   citySearchNode?: React.ReactNode;
   cityName?: string;
+  scanning?: boolean;
+  onScan?: () => void;
+  lastScanResult?: any;
 }
 
-export default function Header({ onSubmitReport, citySearchNode, cityName = 'Timișoara' }: HeaderProps) {
+export default function Header({ onSubmitReport, citySearchNode, scanning, onScan, lastScanResult }: HeaderProps) {
   const { t, language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
@@ -35,18 +38,45 @@ export default function Header({ onSubmitReport, citySearchNode, cityName = 'Tim
           <div className="w-64">
             {citySearchNode}
           </div>
-        ) : (
-          <div className="flex items-center gap-2 text-xs text-text-muted">
-            <span
-              className="w-2 h-2 rounded-full inline-block"
+        ) : null}
+
+        {onScan && (
+          <div className="flex items-center gap-3 ml-4 border-l border-white/10 pl-4">
+            <button
+              onClick={onScan}
+              disabled={scanning}
+              className="flex items-center gap-2 rounded-md font-display font-medium transition-all"
               style={{
-                background: 'var(--green)',
-                boxShadow: '0 0 6px rgba(0, 230, 118, 0.5)',
+                fontSize: '13px',
+                padding: '6px 12px',
+                cursor: scanning ? 'wait' : 'pointer',
+                background: scanning ? 'rgba(0,229,255,0.08)' : 'rgba(0,229,255,0.15)',
+                border: `1px solid ${scanning ? 'rgba(0,229,255,0.2)' : 'var(--cyan)'}`,
+                color: scanning ? 'rgba(0,229,255,0.5)' : 'var(--cyan)',
               }}
-            />
-            <span className="font-body">{t('system.operational')}</span>
-            <span className="mx-2 opacity-30">│</span>
-            <span className="font-body opacity-60">{cityName} Region</span>
+            >
+              <div style={{
+                width: '8px', height: '8px', borderRadius: '50%',
+                background: scanning ? 'var(--cyan)' : 'transparent',
+                border: '1px solid var(--cyan)',
+                animation: scanning ? 'pulse-ring 1.2s ease-out infinite' : 'none',
+              }} />
+              {scanning ? (
+                <span className="animate-pulse">Scanning...</span>
+              ) : (
+                <span>Trigger Scan</span>
+              )}
+            </button>
+
+            {lastScanResult && !scanning && (
+              <div className="flex items-center gap-2 text-xs font-mono" style={{ color: 'var(--cyan)' }}>
+                <span className="text-white/40">│</span>
+                <span style={{ background: 'rgba(0,229,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                  {lastScanResult.alerts_created} anomalies
+                </span>
+                <span className="text-white/40">({lastScanResult.scene_date})</span>
+              </div>
+            )}
           </div>
         )}
       </div>

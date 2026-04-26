@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Alert, CitizenReport } from '../../types'
 import AlertCard from './AlertCard'
+import { useUpvoteReport, useDownvoteReport } from '../../hooks/useNereusQueries'
 
 interface Props {
   alerts: Alert[]
@@ -12,6 +13,8 @@ interface Props {
 
 export default function AlertsPanel({ alerts, reports, loading, collapsed, onToggle }: Props) {
   const [tab, setTab] = useState<'alerts' | 'reports'>('alerts')
+  const upvoteMutation = useUpvoteReport()
+  const downvoteMutation = useDownvoteReport()
 
   return (
     <div
@@ -122,6 +125,21 @@ export default function AlertsPanel({ alerts, reports, loading, collapsed, onTog
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-3)', marginTop: '6px' }}>
                   <span>{r.lat.toFixed(4)}°N {r.lon.toFixed(4)}°E</span>
                   <span>{r.reporter_name ? `By ${r.reporter_name}` : new Date(r.timestamp).toLocaleDateString()}</span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  <button 
+                    onClick={() => upvoteMutation.mutate(r.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-2)', cursor: 'pointer', display: 'flex', gap: '4px', alignItems: 'center', fontSize: '12px' }}
+                  >
+                    👍 <span style={{ color: r.upvotes > 0 ? '#00e676' : 'inherit' }}>{r.upvotes || 0}</span>
+                  </button>
+                  <button 
+                    onClick={() => downvoteMutation.mutate(r.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-2)', cursor: 'pointer', display: 'flex', gap: '4px', alignItems: 'center', fontSize: '12px' }}
+                  >
+                    👎 <span style={{ color: r.downvotes > 0 ? '#ff3b3b' : 'inherit' }}>{r.downvotes || 0}</span>
+                  </button>
                 </div>
               </div>
             ))

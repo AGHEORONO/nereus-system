@@ -113,6 +113,19 @@ def run_scan(
         logger.warning("ML scoring failed (non-fatal): %s", exc)
         ml_results = [{}] * len(anomalies)
 
+    # Clear existing alerts in this bounding box to prevent duplicates
+    stmt = select(Alert).where(
+        Alert.lat >= bbox[1],
+        Alert.lat <= bbox[3],
+        Alert.lon >= bbox[0],
+        Alert.lon <= bbox[2],
+        Alert.source == AlertSource.SATELLITE,
+    )
+    old_alerts = session.exec(stmt).all()
+    for old in old_alerts:
+        session.delete(old)
+    session.commit()
+
     # Persist alerts
     alert_ids: list[int] = []
     for i, a in enumerate(anomalies):

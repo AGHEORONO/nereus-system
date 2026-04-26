@@ -42,6 +42,8 @@ export interface CitizenReport {
   photo_url?: string | null
   reporter_name?: string | null
   image_data?: string | null
+  upvotes: number
+  downvotes: number
 }
 
 export interface HeatmapFeature {

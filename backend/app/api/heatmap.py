@@ -26,12 +26,17 @@ HOTSPOTS = [
 
 
 @router.get("/")
-def get_heatmap(date: str = Query(default=str(Date.today()))) -> dict[str, Any]:
+def get_heatmap(
+    date: str = Query(default=str(Date.today())),
+    west: float = Query(default=DEMO_BBOX[0]),
+    south: float = Query(default=DEMO_BBOX[1]),
+    east: float = Query(default=DEMO_BBOX[2]),
+    north: float = Query(default=DEMO_BBOX[3]),
+) -> dict[str, Any]:
     """
-    Generate a reproducible pollution heatmap for the given ISO date.
+    Generate a reproducible pollution heatmap for the given ISO date and bbox.
     The synthetic data simulates a Sentinel-2 NDCI / turbidity scan.
     """
-    west, south, east, north = DEMO_BBOX
     nx, ny = 35, 25
     rng = np.random.default_rng(abs(hash(date)) % (2 ** 32))
 
@@ -43,12 +48,17 @@ def get_heatmap(date: str = Query(default=str(Date.today()))) -> dict[str, Any]:
     ndci = rng.uniform(-0.1, 0.02, (ny, nx))
     turbidity = rng.uniform(0.95, 1.1, (ny, nx))
 
-    # Add pollution blobs around known hotspot locations
-    for hs in HOTSPOTS:
-        dist = np.sqrt((lats - hs["lat"]) ** 2 + (lons - hs["lon"]) ** 2)
-        bloom = hs["intensity"] * np.exp(-dist / 0.006)
-        ndci += bloom
-        turbidity += bloom * 0.5
+    # Add a dynamic pollution blob relative to the requested bounding box
+    center_lat = south + (north - south) * rng.uniform(0.2, 0.8)
+    center_lon = west + (east - west) * rng.uniform(0.2, 0.8)
+    intensity = rng.uniform(0.1, 0.25)
+    
+    dist = np.sqrt((lats - center_lat) ** 2 + (lons - center_lon) ** 2)
+    # Scale the spread based on the bbox size
+    spread = (east - west) * 0.05
+    bloom = intensity * np.exp(-dist / spread)
+    ndci += bloom
+    turbidity += bloom * 0.5
 
     features = []
     for i in range(ny):

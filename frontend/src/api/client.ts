@@ -6,6 +6,7 @@
  */
 
 import type { Alert, CitizenReport, HeatmapCollection, ScanResponse } from '../types'
+import type { BoundingBox } from '../types/geo'
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -59,10 +60,24 @@ export async function submitReport(payload: ReportPayload): Promise<CitizenRepor
   return json<CitizenReport>(res)
 }
 
+export async function upvoteReport(id: number): Promise<CitizenReport> {
+  const res = await fetch(`${BASE}/api/reports/${id}/upvote`, { method: 'POST' })
+  return json<CitizenReport>(res)
+}
+
+export async function downvoteReport(id: number): Promise<CitizenReport> {
+  const res = await fetch(`${BASE}/api/reports/${id}/downvote`, { method: 'POST' })
+  return json<CitizenReport>(res)
+}
+
 // ── Heatmap ──────────────────────────────────────────────────────────────────
 
-export async function getHeatmap(date: string): Promise<HeatmapCollection> {
-  const res = await fetch(`${BASE}/api/heatmap/?date=${date}`)
+export async function getHeatmap(date: string, bbox?: BoundingBox): Promise<HeatmapCollection> {
+  let url = `${BASE}/api/heatmap/?date=${date}`
+  if (bbox) {
+    url += `&west=${bbox.west}&south=${bbox.south}&east=${bbox.east}&north=${bbox.north}`
+  }
+  const res = await fetch(url)
   return json<HeatmapCollection>(res)
 }
 

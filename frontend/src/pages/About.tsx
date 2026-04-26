@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 export default function About() {
   return (
     <div style={{
-      minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden',
+      height: '100vh', overflowY: 'auto', overflowX: 'hidden',
       background: 'var(--color-bg)',
       backgroundImage: 'radial-gradient(ellipse at 30% 20%, rgba(0,100,180,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(0,60,120,0.1) 0%, transparent 60%)',
       padding: '0 0 60px',

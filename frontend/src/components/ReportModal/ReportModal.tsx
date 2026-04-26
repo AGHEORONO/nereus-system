@@ -88,7 +88,9 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
         pollution_type: type,
         description,
         reporter_name: reporterName,
-        image_data: image_data, // Use the base64 directly for immediate viewing
+        image_data: image_data,
+        upvotes: 0,
+        downvotes: 0,
       }
 
       onSubmitted(localReport)

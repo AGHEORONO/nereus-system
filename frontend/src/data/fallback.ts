@@ -67,6 +67,8 @@ export const FALLBACK_REPORTS: CitizenReport[] = [
     description:
       'Dark oily discharge observed near the industrial outfall. Strong chemical odour. Reported via Galileo GNSS positioning.',
     photo_url: null,
+    upvotes: 0,
+    downvotes: 0,
   },
   {
     id: 2,
@@ -77,5 +79,7 @@ export const FALLBACK_REPORTS: CitizenReport[] = [
     description:
       'Thick white foam accumulation on the canal surface, extending ~200 m downstream. Likely detergent origin.',
     photo_url: null,
+    upvotes: 0,
+    downvotes: 0,
   },
 ]

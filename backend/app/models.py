@@ -60,3 +60,5 @@ class CitizenReport(SQLModel, table=True):
     photo_url: Optional[str] = None
     reporter_name: Optional[str] = None
     image_data: Optional[str] = None
+    upvotes: int = Field(default=0)
+    downvotes: int = Field(default=0)

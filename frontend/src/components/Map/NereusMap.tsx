@@ -344,6 +344,10 @@ function pollutionLabel(t: string): string {
 }
 
 function popupHtml(a: Alert): string {
+  const aiBadge = a.ml_confidence != null 
+    ? `<span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(180,0,255,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3)">AI ${a.ml_confidence}%</span>`
+    : ''
+
   return `
     <div style="font-family:Inter,sans-serif;font-size:13px;min-width:200px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -351,6 +355,7 @@ function popupHtml(a: Alert): string {
         <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;
           background:${severityColor(a.severity)}22;color:${severityColor(a.severity)};
           border:1px solid ${severityColor(a.severity)}66">${a.severity}</span>
+        ${aiBadge}
       </div>
       <div style="color:#7aa8cc;margin-bottom:4px">📡 ${a.scene_date}</div>
       <div style="color:#e2f0ff;margin-bottom:4px">⚠ ${pollutionLabel(a.pollution_type)}</div>

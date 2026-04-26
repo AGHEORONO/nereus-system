@@ -13,7 +13,7 @@ import SubscribeModal from '@/components/SubscribeModal';
 import SatelliteLayerControl from '@/components/SatelliteLayerControl';
 import DynamicLegend from '@/components/DynamicLegend';
 import { BoundingBox, fetchCityWaterData } from '@/services/overpassService';
-import { mockAlerts, getTimeRange, filterAlertsByDate, generateMockAlertsForCity, generateMockSatelliteDataForCity, WaterAlert } from '@/data/mockData';
+import { mockAlerts, getTimeRange, filterAlertsByDate, WaterAlert } from '@/data/mockData';
 import { SatelliteLayerId } from '@/data/satelliteTypes';
 import satelliteData from '@/data/satelliteData.json';
 import { api } from '@/services/nereusApi';
@@ -139,25 +139,29 @@ export default function DashboardPage() {
       setCityBbox(bbox);
       setSelectedAlertId(null);
 
-      // Generate localized mock alerts
-      const newAlerts = generateMockAlertsForCity(bbox, cityName);
-      setAlerts(newAlerts);
+      // Reload real data for the new city
+      loadData();
       
       // Hide welcome screen
       setShowWelcome(false);
 
       // Fetch precise water data for the new bounds
       try {
-        const newData = await fetchCityWaterData(bbox);
-        if (newData.features.length > 0) {
-          setDynamicSatelliteData(newData);
+        const normalizedCity = cityName.toLowerCase().trim();
+        if (normalizedCity.includes('timișoara') || normalizedCity.includes('timisoara')) {
+          setDynamicSatelliteData(satelliteData as GeoJSON.FeatureCollection);
         } else {
-          console.warn("Overpass returned no features, generating fake satellite data for " + cityName);
-          setDynamicSatelliteData(generateMockSatelliteDataForCity(bbox, cityName));
+          const newData = await fetchCityWaterData(bbox);
+          if (newData.features.length > 0) {
+            setDynamicSatelliteData(newData);
+          } else {
+            console.warn(`No water features found for ${cityName}. Map will show empty overlays.`);
+            setDynamicSatelliteData({ type: 'FeatureCollection', features: [] });
+          }
         }
       } catch (err) {
         console.error("Failed to fetch overpass data", err);
-        setDynamicSatelliteData(generateMockSatelliteDataForCity(bbox, cityName));
+        setDynamicSatelliteData({ type: 'FeatureCollection', features: [] });
       }
     },
     []

@@ -578,7 +578,9 @@ export default function MapView({
       const size       = isSelected ? 20 : 14;
       const outerSize  = isSelected ? 36 : 26;
 
-      el.style.cssText = `position:relative;width:${outerSize}px;height:${outerSize}px;cursor:pointer;`;
+      el.style.width = `${outerSize}px`;
+      el.style.height = `${outerSize}px`;
+      el.style.cursor = 'pointer';
 
       const outer = document.createElement('div');
       outer.style.cssText = `

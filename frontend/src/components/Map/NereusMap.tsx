@@ -338,10 +338,12 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
       type: 'FeatureCollection',
       features: zones.map(z => {
         try {
+          const geom = JSON.parse(z.geometry_geojson)
+          if (!geom || !geom.coordinates || JSON.stringify(geom.coordinates).includes('null')) return null
           return {
             type: 'Feature',
             properties: { id: z.id, name: z.name, created_at: z.created_at },
-            geometry: JSON.parse(z.geometry_geojson),
+            geometry: geom,
           }
         } catch {
           return null

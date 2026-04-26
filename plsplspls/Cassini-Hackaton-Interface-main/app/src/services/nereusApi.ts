@@ -1,4 +1,4 @@
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
+const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'https://nereus-backend.onrender.com';
 
 /**
  * Generic fetch wrapper to ensure graceful fallbacks if the backend is offline.

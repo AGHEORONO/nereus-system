@@ -39,7 +39,9 @@ export interface CitizenReport {
   lon: number
   pollution_type: PollutionType
   description: string
-  photo_url: string | null
+  photo_url?: string | null
+  reporter_name?: string | null
+  image_data?: string | null
 }
 
 export interface HeatmapFeature {

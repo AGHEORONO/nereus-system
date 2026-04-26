@@ -27,6 +27,10 @@ interface NereusStore {
   locationBbox: BoundingBox | null
   setLocationBbox: (bbox: BoundingBox) => void
 
+  // Viewport bounding box (current map view)
+  viewportBbox: BoundingBox | null
+  setViewportBbox: (bbox: BoundingBox) => void
+
   // Panel state
   panelOpen: boolean
   setPanelOpen: (open: boolean) => void
@@ -58,6 +62,9 @@ export const useNereusStore = create<NereusStore>((set) => ({
 
   locationBbox: null,
   setLocationBbox: (locationBbox) => set({ locationBbox }),
+
+  viewportBbox: null,
+  setViewportBbox: (viewportBbox) => set({ viewportBbox }),
 
   panelOpen: true,
   setPanelOpen: (open) => set({ panelOpen: open }),

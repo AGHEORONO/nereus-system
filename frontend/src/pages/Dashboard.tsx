@@ -14,7 +14,7 @@ import type { CitizenReport } from '../types'
 export default function Dashboard() {
   // Global UI state via zustand
   const {
-    selectedLocation, locationBbox,
+    selectedLocation, locationBbox, viewportBbox,
     setLocation, setLocationBbox,
     panelOpen, setPanelOpen,
     reportModalOpen, setReportModalOpen,
@@ -44,9 +44,16 @@ export default function Dashboard() {
   const cityName = selectedLocation?.name || 'Timișoara'
   const activeBbox = locationBbox || { west: 21.15, south: 45.72, east: 21.35, north: 45.78 }
 
-  // Use real data globally (no demo restrictions)
-  const displayAlerts = alerts
-  const displayReports = reports
+  // Filter data by current viewport to keep the monitoring feed clean
+  const currentBbox = viewportBbox || activeBbox
+  const displayAlerts = alerts.filter(a =>
+    a.lat >= currentBbox.south && a.lat <= currentBbox.north &&
+    a.lon >= currentBbox.west && a.lon <= currentBbox.east
+  )
+  const displayReports = reports.filter(r =>
+    r.lat >= currentBbox.south && r.lat <= currentBbox.north &&
+    r.lon >= currentBbox.west && r.lon <= currentBbox.east
+  )
   const displayHeatmap = heatmap
   const offline = alertsErr || reportsErr
 
@@ -54,7 +61,7 @@ export default function Dashboard() {
     setScan(true)
     try {
       const result = await scanMutation.mutateAsync({
-        ...activeBbox,
+        ...currentBbox,
         start_date: DATES[0],
         end_date: DATES[DATES.length - 1],
       })

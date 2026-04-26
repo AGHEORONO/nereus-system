@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Alert, CitizenReport, HeatmapCollection } from '../../types'
 import type { BoundingBox } from '../../types/geo'
+import { useNereusStore } from '../../store/useNereusStore'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
@@ -41,7 +42,26 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left')
 
+    map.on('moveend', () => {
+      const bounds = map.getBounds()
+      useNereusStore.getState().setViewportBbox({
+        west: bounds.getWest(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        north: bounds.getNorth(),
+      })
+    })
+
     map.on('load', () => {
+      // Set initial viewport bounding box
+      const bounds = map.getBounds()
+      useNereusStore.getState().setViewportBbox({
+        west: bounds.getWest(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        north: bounds.getNorth(),
+      })
+
       if (!cityBbox) {
         addWaterBodyLayer(map)
       }

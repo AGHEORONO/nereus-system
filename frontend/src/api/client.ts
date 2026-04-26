@@ -39,6 +39,7 @@ export interface ReportPayload {
   photo?: File
   gnss_accuracy_m?: number
   reporter_name?: string
+  image_data?: string
 }
 
 export async function submitReport(payload: ReportPayload): Promise<CitizenReport> {
@@ -52,6 +53,7 @@ export async function submitReport(payload: ReportPayload): Promise<CitizenRepor
       description: payload.description,
       gnss_accuracy_m: payload.gnss_accuracy_m,
       reporter_name: payload.reporter_name,
+      image_data: payload.image_data,
     }),
   })
   return json<CitizenReport>(res)

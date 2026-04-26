@@ -21,6 +21,7 @@ class ReportCreate(BaseModel):
     description: str
     gnss_accuracy_m: Optional[float] = None
     reporter_name: Optional[str] = None
+    image_data: Optional[str] = None
 
 
 @router.post("/", response_model=CitizenReport, status_code=201)
@@ -37,6 +38,8 @@ def create_report(
         lon=body.lon,
         pollution_type=body.pollution_type,
         description=body.description,
+        reporter_name=body.reporter_name,
+        image_data=body.image_data,
     )
     session.add(report)
     session.commit()

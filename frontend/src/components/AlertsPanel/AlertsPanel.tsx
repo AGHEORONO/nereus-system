@@ -108,8 +108,20 @@ export default function AlertsPanel({ alerts, reports, loading, collapsed, onTog
                   </span>
                 </div>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>{r.description}</p>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-3)' }}>
-                  {r.lat.toFixed(4)}°N {r.lon.toFixed(4)}°E · {new Date(r.timestamp).toLocaleDateString()}
+                
+                {(r.image_data || r.photo_url) && (
+                  <div style={{ marginTop: '8px', marginBottom: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+                    <img 
+                      src={r.image_data || r.photo_url!} 
+                      alt="Citizen report photo" 
+                      style={{ width: '100%', maxHeight: '120px', objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                )}
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-3)', marginTop: '6px' }}>
+                  <span>{r.lat.toFixed(4)}°N {r.lon.toFixed(4)}°E</span>
+                  <span>{r.reporter_name ? `By ${r.reporter_name}` : new Date(r.timestamp).toLocaleDateString()}</span>
                 </div>
               </div>
             ))

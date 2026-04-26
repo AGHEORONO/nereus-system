@@ -64,28 +64,7 @@ _ALERTS = [
     },
 ]
 
-_REPORTS = [
-    {
-        "lat": 45.7527,
-        "lon": 21.2651,
-        "pollution_type": PollutionType.CHEMICAL,
-        "description": (
-            "Dark oily discharge observed near the industrial outfall. "
-            "Strong chemical odour. Reported via Galileo GNSS positioning."
-        ),
-        "days_ago": 3,
-    },
-    {
-        "lat": 45.7583,
-        "lon": 21.1972,
-        "pollution_type": PollutionType.FOAM,
-        "description": (
-            "Thick white foam accumulation on the canal surface, "
-            "extending ~200 m downstream. Likely detergent origin."
-        ),
-        "days_ago": 7,
-    },
-]
+
 
 
 def seed(session: Session) -> None:
@@ -107,18 +86,8 @@ def seed(session: Session) -> None:
         )
         session.add(alert)
 
-    for r in _REPORTS:
-        report = CitizenReport(
-            timestamp=now - timedelta(days=r["days_ago"]),  # type: ignore[arg-type]
-            lat=r["lat"],  # type: ignore[arg-type]
-            lon=r["lon"],  # type: ignore[arg-type]
-            pollution_type=r["pollution_type"],  # type: ignore[arg-type]
-            description=r["description"],  # type: ignore[arg-type]
-        )
-        session.add(report)
-
     session.commit()
-    print("[Nereus] Demo data seeded: 3 alerts + 2 citizen reports.")
+    print("[Nereus] Demo data seeded: 3 alerts.")
 
 
 if __name__ == "__main__":

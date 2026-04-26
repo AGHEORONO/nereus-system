@@ -22,6 +22,7 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
   const [lon, setLon] = useState<number | null>(null)
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
   const [type, setType] = useState<PollutionType>('OTHER')
+  const [reporterName, setReporterName] = useState('')
   const [description, setDescription] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -48,14 +49,35 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
     )
   }
 
+  function getBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = error => reject(error)
+    })
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!reporterName.trim()) { setError('Please enter your name.'); return }
     if (lat === null || lon === null) { setError('Please acquire GPS coordinates first.'); return }
     if (!description.trim()) { setError('Please enter a description.'); return }
     setSubmitting(true)
     setError(null)
     try {
-      await submitReport({ lat, lon, pollution_type: type, description, photo: photo ?? undefined })
+      let image_data = undefined
+      if (photo) {
+        image_data = await getBase64(photo)
+      }
+
+      await submitReport({
+        lat, lon,
+        pollution_type: type,
+        description,
+        reporter_name: reporterName,
+        image_data,
+      })
 
       // Create local report for instant feedback
       const localReport: CitizenReport = {
@@ -65,14 +87,15 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
         lon,
         pollution_type: type,
         description,
-        photo_url: photoPreviewUrl,
+        reporter_name: reporterName,
+        image_data: image_data, // Use the base64 directly for immediate viewing
       }
 
       onSubmitted(localReport)
       onClose()
       // Reset form
       setLat(null); setLon(null); setGpsStatus('idle')
-      setDescription(''); setPhoto(null); setType('OTHER')
+      setDescription(''); setPhoto(null); setType('OTHER'); setReporterName('')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Submission failed')
     } finally {
@@ -117,6 +140,21 @@ export default function ReportModal({ open, onClose, onSubmitted }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Reporter Name */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-2)', marginBottom: '6px', display: 'block' }}>
+              Your Name
+            </label>
+            <input 
+              type="text" 
+              className="textarea" 
+              style={{ height: '40px', paddingTop: '10px' }}
+              value={reporterName}
+              onChange={e => setReporterName(e.target.value)}
+              placeholder="Enter your name"
+            />
+          </div>
+
           {/* Galileo GPS section */}
           <div>
             <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-2)', marginBottom: '6px', display: 'block' }}>

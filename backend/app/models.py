@@ -58,3 +58,5 @@ class CitizenReport(SQLModel, table=True):
     pollution_type: PollutionType
     description: str
     photo_url: Optional[str] = None
+    reporter_name: Optional[str] = None
+    image_data: Optional[str] = None

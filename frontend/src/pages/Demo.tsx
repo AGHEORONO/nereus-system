@@ -339,7 +339,7 @@ export default function Demo() {
                   {mlResult.is_anomaly && (
                     <div style={{ fontSize: '14px', marginBottom: '8px' }}>
                       <span style={{ color: '#7aa8cc' }}>Classification: </span>
-                      <strong style={{ color: '#fff' }}>{mlResult.pollution_type.replace('_', ' ')}</strong>
+                      <strong style={{ color: '#fff' }}>{mlResult.pollution_type?.replace('_', ' ')}</strong>
                     </div>
                   )}
                   <div style={{ fontSize: '14px', marginBottom: '8px' }}>

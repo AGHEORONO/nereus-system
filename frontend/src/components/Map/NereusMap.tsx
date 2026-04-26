@@ -144,6 +144,8 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
     alertMarkersRef.current = []
 
     alerts.forEach(alert => {
+      if (!alert.lat || !alert.lon) return
+      
       const el = document.createElement('div')
       el.style.cssText = `
         width:16px; height:16px; border-radius:50%;
@@ -173,6 +175,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
     reportMarkersRef.current = []
 
     reports.forEach(report => {
+      if (!report.lat || !report.lon) return
       const el = document.createElement('div')
       el.style.cssText = `
         width:14px; height:14px; border-radius:50%;
@@ -220,6 +223,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
     localReportMarkersRef.current = []
 
     localReports.forEach(report => {
+      if (!report.lat || !report.lon) return
       const el = document.createElement('div')
       el.style.cssText = `
         width:16px; height:16px; border-radius:50%;
@@ -275,6 +279,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
 
     const onReady = () => {
       historicalEvents.forEach(evt => {
+        if (!evt.lon || !evt.lat) return
         const el = document.createElement('div')
         el.style.cssText = `
           width:20px; height:20px; border-radius:50%;

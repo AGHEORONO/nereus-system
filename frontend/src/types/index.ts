@@ -25,6 +25,11 @@ export interface Alert {
   source: AlertSource
   scene_date: string
   description: string
+  // ML anomaly detection fields (optional, present when ML is active)
+  ml_anomaly_score?: number | null
+  ml_confidence?: number | null
+  ml_pollution_type?: string | null
+  ml_model?: string | null
 }
 
 export interface CitizenReport {

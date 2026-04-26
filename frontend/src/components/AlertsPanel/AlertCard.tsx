@@ -96,6 +96,67 @@ export default function AlertCard({ alert, onClick }: Props) {
         ))}
       </div>
 
+      {/* ML Analysis section */}
+      {alert.ml_confidence != null && (
+        <div style={{
+          marginTop: '8px', padding: '8px',
+          background: 'rgba(0,0,0,0.25)', borderRadius: '6px',
+          border: '1px solid rgba(0,229,255,0.1)',
+        }}>
+          <div style={{
+            fontSize: '10px', fontWeight: 700, color: 'var(--color-primary)',
+            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px',
+            display: 'flex', alignItems: 'center', gap: '4px',
+          }}>
+            🤖 ML Analysis
+          </div>
+          {/* Confidence bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-3)', minWidth: '62px' }}>Confidence</span>
+            <div style={{
+              flex: 1, height: '6px', background: 'rgba(255,255,255,0.06)',
+              borderRadius: '3px', overflow: 'hidden',
+            }}>
+              <div style={{
+                width: `${alert.ml_confidence}%`, height: '100%',
+                borderRadius: '3px',
+                background: alert.ml_confidence > 70
+                  ? 'linear-gradient(90deg, #ff8c00, #ff3b3b)'
+                  : alert.ml_confidence > 40
+                    ? 'linear-gradient(90deg, #f5d800, #ff8c00)'
+                    : 'linear-gradient(90deg, #00e87a, #00b4ff)',
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+            <span style={{
+              fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font-mono)',
+              color: alert.ml_confidence > 70
+                ? '#ff3b3b'
+                : alert.ml_confidence > 40 ? '#ff8c00' : '#00e87a',
+              minWidth: '30px', textAlign: 'right',
+            }}>
+              {alert.ml_confidence}%
+            </span>
+          </div>
+          {/* Type + Model */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-2)' }}>
+              {alert.ml_pollution_type
+                ? alert.ml_pollution_type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                : 'Unknown'}
+            </span>
+            {alert.ml_model && (
+              <span style={{
+                fontSize: '9px', color: 'var(--color-text-3)',
+                fontFamily: 'var(--font-mono)',
+              }}>
+                {alert.ml_model}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Scene date */}
       <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--color-text-3)' }}>
         Scene: {alert.scene_date} · {alert.lat.toFixed(4)}°N {alert.lon.toFixed(4)}°E

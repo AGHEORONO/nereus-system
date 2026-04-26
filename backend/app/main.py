@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, health, heatmap, reports, scan
+from app.api import alerts, health, heatmap, reports, scan, ml
 from app.config import settings
 from app.database import create_db_and_tables
 
@@ -16,6 +16,13 @@ async def lifespan(app: FastAPI):
     """Initialise DB and run seed on startup."""
     create_db_and_tables()
     _auto_seed()
+    # Pre-train the ML model on startup so first request is fast
+    try:
+        from app.ml.anomaly_detector import get_or_train_model
+        get_or_train_model()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning("ML model init failed: %s", exc)
     yield
 
 
@@ -58,6 +65,7 @@ app.include_router(scan.router)
 app.include_router(alerts.router)
 app.include_router(reports.router)
 app.include_router(heatmap.router)
+app.include_router(ml.router)
 
 
 @app.get("/")

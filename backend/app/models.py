@@ -42,6 +42,11 @@ class Alert(SQLModel, table=True):
     source: AlertSource = AlertSource.SATELLITE
     scene_date: str  # ISO date of the Sentinel-2 acquisition
     description: str = ""
+    # ML anomaly detection fields (additive, optional)
+    ml_anomaly_score: Optional[float] = Field(default=None)
+    ml_confidence: Optional[int] = Field(default=None)
+    ml_pollution_type: Optional[str] = Field(default=None)
+    ml_model: Optional[str] = Field(default=None)
 
 
 class CitizenReport(SQLModel, table=True):

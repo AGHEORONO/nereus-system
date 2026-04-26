@@ -97,9 +97,26 @@ def run_scan(
         lons=bands["lons"],
     )
 
+    # ── ML anomaly scoring (additive layer) ──────────────────────────────
+    # Score each detected anomaly with Isolation Forest for confidence metrics
+    ml_results: list[dict] = []
+    try:
+        from app.ml.anomaly_detector import score_pixel_anomaly
+        for a in anomalies:
+            ml_result = score_pixel_anomaly(
+                ndwi=float(ndwi[wmask].mean()) if wmask.any() else 0.5,
+                ndci=float(a.ndci_max),
+                turbidity=float(a.turbidity_max),
+            )
+            ml_results.append(ml_result)
+    except Exception as exc:
+        logger.warning("ML scoring failed (non-fatal): %s", exc)
+        ml_results = [{}] * len(anomalies)
+
     # Persist alerts
     alert_ids: list[int] = []
-    for a in anomalies:
+    for i, a in enumerate(anomalies):
+        ml = ml_results[i] if i < len(ml_results) else {}
         alert = Alert(
             lat=a.lat,
             lon=a.lon,
@@ -112,6 +129,11 @@ def run_scan(
             scene_date=bands["scene_date"],
             description=f"Detected via Sentinel-2 scene {bands['scene_date']}. "
                         f"Anomaly area: {a.area_ha} ha.",
+            # ML fields (None if ML scoring failed)
+            ml_anomaly_score=ml.get("anomaly_score"),
+            ml_confidence=ml.get("confidence"),
+            ml_pollution_type=ml.get("pollution_type"),
+            ml_model=ml.get("ml_model"),
         )
         session.add(alert)
         session.commit()

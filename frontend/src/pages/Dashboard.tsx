@@ -47,6 +47,9 @@ function generateDemoAlerts(lat: number, lon: number, cityName: string): Alert[]
       source: 'satellite' as const,
       scene_date: DATES[4],
       description: `${types[0].label} near ${cityName}. Sentinel-2 L2A analysis shows anomalous red/green ratio (1.35). Area: ~8.2 ha.`,
+      ml_confidence: 94,
+      ml_pollution_type: 'turbidity',
+      ml_model: 'IsolationForest',
     },
     {
       id: 9002,
@@ -61,6 +64,9 @@ function generateDemoAlerts(lat: number, lon: number, cityName: string): Alert[]
       source: 'satellite' as const,
       scene_date: DATES[3],
       description: `${types[1].label} upstream of ${cityName}. NDCI value 0.08 exceeds threshold. Monitoring recommended.`,
+      ml_confidence: 68,
+      ml_pollution_type: 'algal_bloom',
+      ml_model: 'IsolationForest',
     },
     {
       id: 9003,
@@ -75,6 +81,9 @@ function generateDemoAlerts(lat: number, lon: number, cityName: string): Alert[]
       source: 'satellite' as const,
       scene_date: DATES[2],
       description: `${types[2].label} detected in ${cityName} region. Low-severity, consistent with post-rain sediment load.`,
+      ml_confidence: 25,
+      ml_pollution_type: 'normal',
+      ml_model: 'IsolationForest',
     },
   ]
 }

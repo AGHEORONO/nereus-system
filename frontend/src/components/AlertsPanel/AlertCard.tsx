@@ -2,10 +2,9 @@ import type { Alert } from '../../types'
 
 interface Props {
   alert: Alert
+  isSelected?: boolean
   onClick?: () => void
 }
-
-
 
 const TYPE_ICON: Record<string, string> = {
   ALGAL_BLOOM: '🦠',
@@ -24,9 +23,13 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`
 }
 
-export default function AlertCard({ alert, onClick }: Props) {
+export default function AlertCard({ alert, isSelected, onClick }: Props) {
   const icon = TYPE_ICON[alert.pollution_type] ?? '⚠️'
   const label = alert.pollution_type.replace(/_/g, ' ')
+
+  const baseBg = isSelected ? 'rgba(0,180,255,0.08)' : 'rgba(0,0,0,0.4)'
+  const baseBorder = isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.15)'
+  const borderLeft = isSelected ? '4px solid var(--color-primary)' : '1px solid rgba(255,255,255,0.15)'
 
   return (
     <button
@@ -36,8 +39,10 @@ export default function AlertCard({ alert, onClick }: Props) {
         display: 'block',
         width: '100%',
         textAlign: 'left',
-        background: 'rgba(0,0,0,0.4)',
-        border: '1px solid rgba(255,255,255,0.15)',
+        background: baseBg,
+        border: '1px solid',
+        borderColor: baseBorder,
+        borderLeft: borderLeft,
         borderRadius: 'var(--radius-sm)',
         padding: '14px',
         cursor: 'pointer',
@@ -49,11 +54,13 @@ export default function AlertCard({ alert, onClick }: Props) {
         const el = e.currentTarget
         el.style.background = 'rgba(0,180,255,0.1)'
         el.style.borderColor = 'var(--color-primary)'
+        if (!isSelected) el.style.borderLeft = '1px solid var(--color-primary)'
       }}
       onMouseLeave={e => {
         const el = e.currentTarget
-        el.style.background = 'rgba(0,0,0,0.4)'
-        el.style.borderColor = 'rgba(255,255,255,0.15)'
+        el.style.background = baseBg
+        el.style.borderColor = baseBorder
+        el.style.borderLeft = borderLeft
       }}
     >
       {/* Header row */}

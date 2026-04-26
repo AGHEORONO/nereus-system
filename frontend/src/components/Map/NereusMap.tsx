@@ -22,8 +22,8 @@ interface Props {
 export default function NereusMap({ alerts, reports, heatmap, cityBbox, localReports = [] }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
-  const alertMarkersRef = useRef<maplibregl.Marker[]>([])
-  const reportMarkersRef = useRef<maplibregl.Marker[]>([])
+  const alertMarkersRef = useRef<{id: number, marker: maplibregl.Marker}[]>([])
+  const reportMarkersRef = useRef<{id: number, marker: maplibregl.Marker}[]>([])
   const localReportMarkersRef = useRef<maplibregl.Marker[]>([])
 
   // ── Init map ────────────────────────────────────────────────────────────
@@ -66,9 +66,20 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
         addWaterBodyLayer(map)
       }
     })
+    
+    // Hide back button on manual pan
+    map.on('dragstart', () => {
+      useNereusStore.getState().clearBackBtn()
+    })
 
     mapRef.current = map
-    return () => { map.remove(); mapRef.current = null }
+    useNereusStore.getState().setMapRef(map)
+    
+    return () => { 
+      map.remove()
+      mapRef.current = null 
+      useNereusStore.getState().setMapRef(null)
+    }
   }, [])
 
   // ── Handle Bounding Box ──────────────────────────────────────────────────
@@ -100,38 +111,33 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
         id: 'heatmap-layer',
         type: 'heatmap',
         source: 'heatmap-source',
-        maxzoom: 17,
         paint: {
           'heatmap-weight': ['get', 'pollution'],
-          'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 1.5],
-          'heatmap-radius':   ['interpolate', ['linear'], ['zoom'], 10, 18, 15, 32],
-          'heatmap-opacity':  0.72,
+          'heatmap-intensity': 1,
           'heatmap-color': [
             'interpolate', ['linear'], ['heatmap-density'],
-            0,    'rgba(0,0,0,0)',
-            0.15, 'rgba(0,100,255,0.4)',
-            0.4,  'rgba(0,220,200,0.6)',
-            0.65, 'rgba(255,200,0,0.75)',
-            0.85, 'rgba(255,80,0,0.85)',
-            1,    'rgba(255,0,50,1)',
+            0, 'rgba(0,0,255,0)',
+            0.2, 'rgba(0,180,255,0.4)',
+            0.5, 'rgba(245,216,0,0.6)',
+            0.8, 'rgba(255,140,0,0.8)',
+            1, 'rgba(255,59,59,0.9)'
           ],
-        },
+          'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 10, 15, 15, 40],
+          'heatmap-opacity': 0.8
+        }
       })
     }
 
-    if (map.isStyleLoaded()) {
-      updateLayer()
-    } else {
-      map.once('load', updateLayer)
-    }
+    if (map.isStyleLoaded()) updateLayer()
+    else map.once('styledata', updateLayer)
   }, [heatmap])
 
-  // ── Alert markers (fixed: no animated pulse ring to prevent zoom jitter) ─
+  // ── Alert markers (from API) ─────────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
-    alertMarkersRef.current.forEach(m => m.remove())
+    alertMarkersRef.current.forEach(m => m.marker.remove())
     alertMarkersRef.current = []
 
     alerts.forEach(alert => {
@@ -151,7 +157,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
         .setPopup(popup)
         .addTo(map)
 
-      alertMarkersRef.current.push(marker)
+      alertMarkersRef.current.push({ id: alert.id, marker })
     })
   }, [alerts])
 
@@ -160,7 +166,7 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
     const map = mapRef.current
     if (!map) return
 
-    reportMarkersRef.current.forEach(m => m.remove())
+    reportMarkersRef.current.forEach(m => m.marker.remove())
     reportMarkersRef.current = []
 
     reports.forEach(report => {
@@ -180,9 +186,27 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
         .setPopup(popup)
         .addTo(map)
 
-      reportMarkersRef.current.push(marker)
+      reportMarkersRef.current.push({ id: report.id, marker })
     })
   }, [reports])
+
+  // ── Handle popup opening on selection ────────────────────────────────────
+  const selectedItemId = useNereusStore(s => s.selectedItemId)
+  useEffect(() => {
+    if (!selectedItemId) return
+
+    const alertMatch = alertMarkersRef.current.find(m => m.id === selectedItemId)
+    if (alertMatch) {
+      const popup = alertMatch.marker.getPopup()
+      if (popup && !popup.isOpen()) alertMatch.marker.togglePopup()
+    }
+
+    const reportMatch = reportMarkersRef.current.find(m => m.id === selectedItemId)
+    if (reportMatch) {
+      const popup = reportMatch.marker.getPopup()
+      if (popup && !popup.isOpen()) reportMatch.marker.togglePopup()
+    }
+  }, [selectedItemId])
 
   // ── Local (just-submitted) report markers with green glow ───────────────
   useEffect(() => {
@@ -293,12 +317,58 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
     }
   }, [])
 
+  const showBackBtn = useNereusStore(s => s.showBackBtn)
+  const prevViewport = useNereusStore(s => s.prevViewport)
+  const clearBackBtn = useNereusStore(s => s.clearBackBtn)
+
+  const handleBackToOverview = () => {
+    if (mapRef.current && prevViewport) {
+      mapRef.current.flyTo({
+        center: prevViewport.center,
+        zoom: prevViewport.zoom,
+        duration: 1000,
+        essential: true
+      })
+      clearBackBtn()
+      useNereusStore.getState().setSelectedItemId(null)
+    }
+  }
+
   return (
-    <div
-      ref={containerRef}
-      id="nereus-map"
-      style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <div
+        ref={containerRef}
+        id="nereus-map"
+        style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+      />
+      {showBackBtn && (
+        <button
+          onClick={handleBackToOverview}
+          className="glass-panel"
+          style={{
+            position: 'absolute',
+            bottom: '40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: 'var(--color-text-1)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            zIndex: 10,
+            border: '1px solid var(--color-border)',
+            background: 'rgba(0,0,0,0.6)'
+          }}
+        >
+          ← Back to overview
+        </button>
+      )}
+    </div>
   )
 }
 

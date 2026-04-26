@@ -249,7 +249,7 @@ export default function About() {
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: '48px', paddingTop: '24px', borderTop: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginBottom: '8px' }}>
-            Built by AGHEORONO for the CASSINI Hackathon 2025
+            Built by MECHAFUSION for the CASSINI Hackathon 2026
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-3)', opacity: 0.6 }}>
             Powered by Copernicus · Galileo · EU Space Programme

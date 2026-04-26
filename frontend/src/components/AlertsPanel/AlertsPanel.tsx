@@ -3,6 +3,8 @@ import type { Alert, CitizenReport } from '../../types'
 import AlertCard from './AlertCard'
 import { useUpvoteReport, useDownvoteReport } from '../../hooks/useNereusQueries'
 
+import { useNereusStore } from '../../store/useNereusStore'
+
 interface Props {
   alerts: Alert[]
   reports: CitizenReport[]
@@ -15,6 +17,12 @@ export default function AlertsPanel({ alerts, reports, loading, collapsed, onTog
   const [tab, setTab] = useState<'alerts' | 'reports'>('alerts')
   const upvoteMutation = useUpvoteReport()
   const downvoteMutation = useDownvoteReport()
+
+  const flyToLocation = useNereusStore(s => s.flyToLocation)
+  const selectedItemId = useNereusStore(s => s.selectedItemId)
+  const setSelectedItemId = useNereusStore(s => s.setSelectedItemId)
+  const setActiveAlert = useNereusStore(s => s.setActiveAlert)
+  const setActiveReport = useNereusStore(s => s.setActiveReport)
 
   return (
     <div
@@ -85,21 +93,55 @@ export default function AlertsPanel({ alerts, reports, loading, collapsed, onTog
         {tab === 'alerts' && (
           alerts.length === 0
             ? <EmptyState text="No alerts detected" />
-            : alerts.map(a => <AlertCard key={a.id} alert={a} />)
+            : alerts.map(a => (
+                <AlertCard 
+                  key={a.id} 
+                  alert={a} 
+                  isSelected={selectedItemId === a.id}
+                  onClick={() => {
+                    flyToLocation(a.lat, a.lon)
+                    setSelectedItemId(a.id)
+                    setActiveAlert(a)
+                  }}
+                />
+              ))
         )}
         {tab === 'reports' && (
           reports.length === 0
             ? <EmptyState text="No citizen reports yet" />
-            : reports.map(r => (
-              <div key={r.id}
-                style={{
-                  background: 'rgba(0,0,0,0.4)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '14px',
-                  marginBottom: '10px',
-                }}
-              >
+            : reports.map(r => {
+                const isSelected = selectedItemId === r.id
+                return (
+                  <div key={r.id}
+                    onClick={() => {
+                      flyToLocation(r.lat, r.lon)
+                      setSelectedItemId(r.id)
+                      setActiveReport(r)
+                    }}
+                    style={{
+                      background: isSelected ? 'rgba(0,180,255,0.08)' : 'rgba(0,0,0,0.4)',
+                      border: '1px solid',
+                      borderColor: isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.15)',
+                      borderLeft: isSelected ? '4px solid var(--color-primary)' : '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '14px',
+                      marginBottom: '10px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={e => {
+                      const el = e.currentTarget
+                      el.style.background = 'rgba(0,180,255,0.1)'
+                      el.style.borderColor = 'var(--color-primary)'
+                      if (!isSelected) el.style.borderLeft = '1px solid var(--color-primary)'
+                    }}
+                    onMouseLeave={e => {
+                      const el = e.currentTarget
+                      el.style.background = isSelected ? 'rgba(0,180,255,0.08)' : 'rgba(0,0,0,0.4)'
+                      el.style.borderColor = isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.15)'
+                      el.style.borderLeft = isSelected ? '4px solid var(--color-primary)' : '1px solid rgba(255,255,255,0.15)'
+                    }}
+                  >
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
                   <span style={{ fontSize: '15px' }}>🛰</span>
                   <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text-1)', flex: 1 }}>
@@ -129,20 +171,20 @@ export default function AlertsPanel({ alerts, reports, loading, collapsed, onTog
                 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <button 
-                    onClick={() => upvoteMutation.mutate(r.id)}
+                    onClick={(e) => { e.stopPropagation(); upvoteMutation.mutate(r.id) }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-text-2)', cursor: 'pointer', display: 'flex', gap: '4px', alignItems: 'center', fontSize: '12px' }}
                   >
                     👍 <span style={{ color: r.upvotes > 0 ? '#00e676' : 'inherit' }}>{r.upvotes || 0}</span>
                   </button>
                   <button 
-                    onClick={() => downvoteMutation.mutate(r.id)}
+                    onClick={(e) => { e.stopPropagation(); downvoteMutation.mutate(r.id) }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-text-2)', cursor: 'pointer', display: 'flex', gap: '4px', alignItems: 'center', fontSize: '12px' }}
                   >
                     👎 <span style={{ color: r.downvotes > 0 ? '#ff3b3b' : 'inherit' }}>{r.downvotes || 0}</span>
                   </button>
                 </div>
               </div>
-            ))
+            )})
         )}
       </div>
     </div>

@@ -51,37 +51,83 @@ interface NereusStore {
   lastScanResult: ScanResult | null
   setLastScanResult: (r: ScanResult | null) => void
 
-  // Time slider date index
+  // Time slider
   dateIndex: number
-  setDateIndex: (i: number) => void
+  setDateIndex: (idx: number) => void
+
+  // Map control & selection
+  setMapRef: (map: any) => void
+  flyToLocation: (lat: number, lon: number) => void
+  
+  // Selected ID for feed items (Alerts or Reports)
+  selectedItemId: number | null
+  setSelectedItemId: (id: number | null) => void
+
+  // Back to overview feature
+  prevViewport: { center: [number, number], zoom: number } | null
+  showBackBtn: boolean
+  clearBackBtn: () => void
 }
+
+let mapInstance: any = null
 
 export const useNereusStore = create<NereusStore>((set) => ({
   selectedLocation: null,
   setLocation: (name, lat, lon) => set({ selectedLocation: { name, lat, lon } }),
 
   locationBbox: null,
-  setLocationBbox: (locationBbox) => set({ locationBbox }),
+  setLocationBbox: (bbox) => set({ locationBbox: bbox }),
 
   viewportBbox: null,
-  setViewportBbox: (viewportBbox) => set({ viewportBbox }),
+  setViewportBbox: (bbox) => set({ viewportBbox: bbox }),
 
   panelOpen: true,
   setPanelOpen: (open) => set({ panelOpen: open }),
 
   activeAlert: null,
-  setActiveAlert: (activeAlert) => set({ activeAlert, activeReport: null }),
+  setActiveAlert: (a) => set({ activeAlert: a }),
   activeReport: null,
-  setActiveReport: (activeReport) => set({ activeReport, activeAlert: null }),
+  setActiveReport: (r) => set({ activeReport: r }),
 
   reportModalOpen: false,
-  setReportModalOpen: (reportModalOpen) => set({ reportModalOpen }),
+  setReportModalOpen: (open) => set({ reportModalOpen: open }),
 
   scanning: false,
   setScan: (scanning) => set({ scanning }),
-  lastScanResult: null,
-  setLastScanResult: (lastScanResult) => set({ lastScanResult }),
 
-  dateIndex: 4,
-  setDateIndex: (dateIndex) => set({ dateIndex }),
+  lastScanResult: null,
+  setLastScanResult: (res) => set({ lastScanResult: res }),
+
+  dateIndex: 0,
+  setDateIndex: (idx) => set({ dateIndex: idx }),
+
+  selectedItemId: null,
+  setSelectedItemId: (id) => set({ selectedItemId: id }),
+
+  prevViewport: null,
+  showBackBtn: false,
+  clearBackBtn: () => set({ showBackBtn: false }),
+
+  setMapRef: (map) => {
+    mapInstance = map
+  },
+
+  flyToLocation: (lat, lon) => {
+    if (!mapInstance) return
+    const center = mapInstance.getCenter()
+    const zoom = mapInstance.getZoom()
+    
+    // Store previous viewport and show back button
+    set({ 
+      prevViewport: { center: [center.lng, center.lat], zoom },
+      showBackBtn: true
+    })
+
+    mapInstance.flyTo({
+      center: [lon, lat],
+      zoom: 15,
+      duration: 1200,
+      essential: true
+    })
+  }
 }))

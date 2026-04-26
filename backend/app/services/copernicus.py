@@ -59,8 +59,8 @@ def _synthetic_bands(bbox: tuple[float, float, float, float], date_str: str) -> 
             iy, ix = hy + dy, hx + dx
             if 0 <= iy < ny and 0 <= ix < nx:
                 weight = np.exp(-(dx ** 2 + dy ** 2) / 8.0)
-                b05[iy, ix] += 0.08 * weight   # elevated Red-Edge → NDCI ↑
-                b04[iy, ix] += 0.04 * weight   # elevated Red    → turbidity ↑
+                b05[iy, ix] += 0.20 * weight   # huge Red-Edge → NDCI ↑
+                b04[iy, ix] += 0.15 * weight   # huge Red    → turbidity ↑
 
     return BandArrays(
         b03=b03, b04=b04, b05=b05, b08=b08,

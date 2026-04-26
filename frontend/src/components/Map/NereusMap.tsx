@@ -157,12 +157,16 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
 
       const popup = new maplibregl.Popup({ offset: 12 }).setHTML(popupHtml(alert))
 
-      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([alert.lon, alert.lat])
-        .setPopup(popup)
-        .addTo(map)
+      try {
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([alert.lon, alert.lat])
+          .setPopup(popup)
+          .addTo(map)
 
-      alertMarkersRef.current.push({ id: alert.id, marker })
+        alertMarkersRef.current.push({ id: alert.id, marker })
+      } catch (e) {
+        console.warn('Skipping alert marker due to invalid coordinates:', alert)
+      }
     })
   }, [alerts])
 
@@ -187,12 +191,16 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
 
       const popup = new maplibregl.Popup({ offset: 12 }).setHTML(reportPopupHtml(report))
 
-      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([report.lon, report.lat])
-        .setPopup(popup)
-        .addTo(map)
+      try {
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([report.lon, report.lat])
+          .setPopup(popup)
+          .addTo(map)
 
-      reportMarkersRef.current.push({ id: report.id, marker })
+        reportMarkersRef.current.push({ id: report.id, marker })
+      } catch (e) {
+        console.warn('Skipping report marker due to invalid coordinates:', report)
+      }
     })
   }, [reports])
 
@@ -248,12 +256,16 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
         </div>
       `)
 
-      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([report.lon, report.lat])
-        .setPopup(popup)
-        .addTo(map)
+      try {
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([report.lon, report.lat])
+          .setPopup(popup)
+          .addTo(map)
 
-      localReportMarkersRef.current.push(marker)
+        localReportMarkersRef.current.push(marker)
+      } catch (e) {
+        console.warn('Skipping local report marker due to invalid coordinates:', report)
+      }
     })
   }, [localReports])
 
@@ -311,10 +323,14 @@ export default function NereusMap({ alerts, reports, heatmap, cityBbox, localRep
           </div>
         `)
 
-        new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([evt.lon, evt.lat])
-          .setPopup(popup)
-          .addTo(map)
+        try {
+          new maplibregl.Marker({ element: el, anchor: 'center' })
+            .setLngLat([evt.lon, evt.lat])
+            .setPopup(popup)
+            .addTo(map)
+        } catch (e) {
+          console.warn('Skipping historical marker due to invalid coordinates:', evt)
+        }
       })
     }
 

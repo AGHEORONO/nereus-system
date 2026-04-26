@@ -1,0 +1,435 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* ─── Design Tokens: Cartographic Field Station ─── */
+:root {
+  /* Core palette — warm charcoal & stone */
+  --abyss: #121210;
+  --deep: #1a1a18;
+  --ocean: #222220;
+  --trench: #2d2b28;
+  --shelf: #3d3a35;
+  --surface: #524e48;
+
+  /* Accent: Terrain Gold */
+  --gold: #d4a843;
+  --gold-dim: #a8862f;
+  --gold-glow: rgba(212, 168, 67, 0.15);
+
+  /* Signal Green (success / live status) */
+  --green: #4ecb71;
+  --green-dim: #3aa55a;
+  --green-glow: rgba(78, 203, 113, 0.12);
+
+  /* Severity palette */
+  --red: #e54b4b;
+  --red-dim: #c13636;
+  --red-glow: rgba(229, 75, 75, 0.15);
+  --amber: #d4913a;
+  --amber-dim: #b07528;
+  --amber-glow: rgba(212, 145, 58, 0.15);
+  --cyan: #5ba8c8;
+  --cyan-dim: #47889f;
+  --cyan-glow: rgba(91, 168, 200, 0.12);
+
+  /* Text — parchment hierarchy */
+  --text-primary: #e8e0d4;
+  --text-secondary: #a89e90;
+  --text-muted: #6e665c;
+
+  /* Panel effects */
+  --glass-bg: rgba(26, 26, 24, 0.92);
+  --glass-border: rgba(61, 58, 53, 0.7);
+  --glass-highlight: rgba(212, 168, 67, 0.04);
+
+  /* Alert card tokens */
+  --alert-card-bg: rgba(34, 34, 32, 0.6);
+  --alert-card-hover: rgba(45, 43, 40, 0.8);
+  --alert-card-hover-border: rgba(61, 58, 53, 0.7);
+}
+
+.light {
+  --abyss: #f5f0e8;
+  --deep: #ece5da;
+  --ocean: #faf7f2;
+  --trench: #ffffff;
+  --shelf: #ddd6ca;
+  --surface: #c4bdb1;
+
+  --gold: #b08a2e;
+  --gold-dim: #8c6e22;
+  --gold-glow: rgba(176, 138, 46, 0.15);
+
+  --green: #2d9e50;
+  --green-dim: #228a42;
+  --green-glow: rgba(45, 158, 80, 0.12);
+
+  --red: #c13636;
+  --red-dim: #a22b2b;
+  --red-glow: rgba(193, 54, 54, 0.15);
+  --amber: #b07528;
+  --amber-dim: #8c5e1f;
+  --amber-glow: rgba(176, 117, 40, 0.15);
+  --cyan: #3a7a96;
+  --cyan-dim: #2d6178;
+  --cyan-glow: rgba(58, 122, 150, 0.12);
+
+  --text-primary: #1a1918;
+  --text-secondary: #5a554e;
+  --text-muted: #8a847a;
+
+  --glass-bg: rgba(250, 247, 242, 0.94);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-highlight: rgba(0, 0, 0, 0.02);
+
+  --alert-card-bg: rgba(255, 255, 255, 0.7);
+  --alert-card-hover: rgba(255, 255, 255, 0.95);
+  --alert-card-hover-border: rgba(0, 0, 0, 0.12);
+}
+
+/* ─── Tailwind Theme Integration ─── */
+@theme inline {
+  --color-abyss: var(--abyss);
+  --color-deep: var(--deep);
+  --color-ocean: var(--ocean);
+  --color-trench: var(--trench);
+  --color-shelf: var(--shelf);
+  --color-surface: var(--surface);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-red: var(--red);
+  --color-red-dim: var(--red-dim);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --font-display: "Syne", sans-serif;
+  --font-body: "Source Sans 3", sans-serif;
+}
+
+/* ─── Base Styles ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--abyss);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Contour Line Texture Overlay ─── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 200 Q100 180 200 200 T400 200' fill='none' stroke='%23d4a843' stroke-width='0.5'/%3E%3Cpath d='M0 160 Q120 140 200 160 T400 160' fill='none' stroke='%23d4a843' stroke-width='0.4'/%3E%3Cpath d='M0 240 Q80 260 200 240 T400 240' fill='none' stroke='%23d4a843' stroke-width='0.4'/%3E%3Cpath d='M0 120 Q140 100 200 120 T400 120' fill='none' stroke='%23d4a843' stroke-width='0.3'/%3E%3Cpath d='M0 280 Q60 300 200 280 T400 280' fill='none' stroke='%23d4a843' stroke-width='0.3'/%3E%3Cpath d='M0 80 Q160 60 200 80 T400 80' fill='none' stroke='%23d4a843' stroke-width='0.25'/%3E%3Cpath d='M0 320 Q40 340 200 320 T400 320' fill='none' stroke='%23d4a843' stroke-width='0.25'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 400px 400px;
+}
+
+/* ─── Instrument Panel (replaces glass-panel) ─── */
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1.5px solid var(--glass-border);
+  box-shadow:
+    0 1px 0 0 rgba(212, 168, 67, 0.03) inset,
+    0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.light .glass-panel {
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.6) inset,
+    0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Severity Indicator Glow ─── */
+.severity-high {
+  color: var(--red);
+  text-shadow: 0 0 6px var(--red-glow);
+}
+
+.severity-medium {
+  color: var(--amber);
+  text-shadow: 0 0 6px var(--amber-glow);
+}
+
+.severity-low {
+  color: var(--cyan);
+  text-shadow: 0 0 6px var(--cyan-glow);
+}
+
+.severity-dot-high {
+  background: var(--red);
+  box-shadow: 0 0 6px 2px rgba(229, 75, 75, 0.5);
+}
+
+.severity-dot-medium {
+  background: var(--amber);
+  box-shadow: 0 0 6px 2px rgba(212, 145, 58, 0.5);
+}
+
+.severity-dot-low {
+  background: var(--cyan);
+  box-shadow: 0 0 6px 2px rgba(91, 168, 200, 0.4);
+}
+
+/* ─── Scrollbar Styling ─── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--shelf);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface);
+}
+
+/* ─── Map Marker Pulsing Animation ─── */
+@keyframes marker-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.marker-pulse-ring {
+  animation: marker-pulse 2s ease-out infinite;
+}
+
+/* ─── MapLibre Popup Overrides ─── */
+.maplibregl-popup-content {
+  background: var(--glass-bg) !important;
+  border: 1.5px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  min-width: 240px !important;
+  font-family: var(--font-body) !important;
+}
+
+.light .maplibregl-popup-content {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.light .maplibregl-popup-content h3,
+.light .maplibregl-popup-content p,
+.light .maplibregl-popup-content span {
+  color: var(--text-primary) !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: var(--glass-bg) !important;
+}
+
+.maplibregl-popup-close-button {
+  color: var(--text-secondary) !important;
+  font-size: 18px !important;
+  right: 8px !important;
+  top: 8px !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  color: var(--gold) !important;
+  background: transparent !important;
+}
+
+/* ─── MapLibre Nav Controls (light) ─── */
+.light .maplibregl-ctrl-group {
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.light .maplibregl-ctrl button {
+  color: #374151 !important;
+}
+
+.light .maplibregl-ctrl button:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ─── Staggered Fade-In ─── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeSlideUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* ─── Contour hero background animation ─── */
+@keyframes contourDrift {
+  0% { background-position: 0 0; }
+  100% { background-position: 400px 200px; }
+}
+
+.contour-animated {
+  background-image: url("data:image/svg+xml,%3Csvg width='600' height='600' viewBox='0 0 600 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 300 Q150 260 300 300 T600 300' fill='none' stroke='%23d4a843' stroke-width='0.8'/%3E%3Cpath d='M0 240 Q180 200 300 240 T600 240' fill='none' stroke='%23d4a843' stroke-width='0.6'/%3E%3Cpath d='M0 360 Q120 400 300 360 T600 360' fill='none' stroke='%23d4a843' stroke-width='0.6'/%3E%3Cpath d='M0 180 Q200 140 300 180 T600 180' fill='none' stroke='%23d4a843' stroke-width='0.5'/%3E%3Cpath d='M0 420 Q100 460 300 420 T600 420' fill='none' stroke='%23d4a843' stroke-width='0.5'/%3E%3Cpath d='M0 120 Q220 80 300 120 T600 120' fill='none' stroke='%23d4a843' stroke-width='0.4'/%3E%3Cpath d='M0 480 Q80 520 300 480 T600 480' fill='none' stroke='%23d4a843' stroke-width='0.4'/%3E%3Cpath d='M0 60 Q240 20 300 60 T600 60' fill='none' stroke='%23d4a843' stroke-width='0.3'/%3E%3Cpath d='M0 540 Q60 580 300 540 T600 540' fill='none' stroke='%23d4a843' stroke-width='0.3'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 600px 600px;
+  animation: contourDrift 40s linear infinite;
+}
+
+/* ─── Map Container ─── */
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+.map-container .maplibregl-canvas {
+  outline: none;
+}
+
+/* ─── Toast Notification ─── */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast-enter {
+  animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-exit {
+  animation: toastSlideOut 0.3s ease-in forwards;
+}
+
+/* ─── Glow Underline Effect ─── */
+.glow-underline {
+  position: relative;
+}
+
+.glow-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold),
+    transparent
+  );
+  opacity: 0.4;
+}
+
+/* ─── Button glow ─── */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 168, 67, 0.12),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-glow:hover::before {
+  opacity: 1;
+}
+
+/* ─── MapLibre Attribution Minimal ─── */
+.maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+  background: rgba(18, 18, 16, 0.6) !important;
+  color: var(--text-muted) !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--gold-dim) !important;
+}
+
+/* ─── Word reveal animation for welcome ─── */
+@keyframes wordReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ─── Bottom drawer transitions ─── */
+.drawer-transition {
+  transition: height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Tool rail hover expand ─── */
+@keyframes railExpand {
+  from { width: 52px; }
+  to { width: 220px; }
+}

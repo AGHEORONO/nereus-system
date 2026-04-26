@@ -10,9 +10,11 @@ interface HeaderProps {
   scanning?: boolean;
   onScan?: () => void;
   lastScanResult?: any;
+  showHeatmap?: boolean;
+  onToggleHeatmap?: () => void;
 }
 
-export default function Header({ onSubmitReport, citySearchNode, scanning, onScan, lastScanResult }: HeaderProps) {
+export default function Header({ onSubmitReport, citySearchNode, scanning, onScan, lastScanResult, showHeatmap, onToggleHeatmap }: HeaderProps) {
   const { t, language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
@@ -42,6 +44,22 @@ export default function Header({ onSubmitReport, citySearchNode, scanning, onSca
 
         {onScan && (
           <div className="flex items-center gap-3 ml-4 border-l border-white/10 pl-4">
+            {onToggleHeatmap && (
+              <button
+                onClick={onToggleHeatmap}
+                className="flex items-center gap-2 rounded-md font-display font-medium transition-all"
+                style={{
+                  fontSize: '13px',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  background: showHeatmap ? 'rgba(0,229,255,0.15)' : 'transparent',
+                  border: `1px solid ${showHeatmap ? 'var(--cyan)' : 'rgba(255,255,255,0.2)'}`,
+                  color: showHeatmap ? 'var(--cyan)' : 'rgba(255,255,255,0.6)',
+                }}
+              >
+                Heatmap: {showHeatmap ? 'ON' : 'OFF'}
+              </button>
+            )}
             <button
               onClick={onScan}
               disabled={scanning}

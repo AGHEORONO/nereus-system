@@ -93,11 +93,11 @@ export default function AlertsPanel({ alerts, reports, loading, collapsed, onTog
             : reports.map(r => (
               <div key={r.id}
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--color-border)',
+                  background: 'rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(255,255,255,0.15)',
                   borderRadius: 'var(--radius-sm)',
-                  padding: '12px',
-                  marginBottom: '8px',
+                  padding: '14px',
+                  marginBottom: '10px',
                 }}
               >
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>

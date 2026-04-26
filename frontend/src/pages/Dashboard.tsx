@@ -115,13 +115,16 @@ export default function Dashboard() {
     }, 60_000)
   }
 
+  // Toggle for heatmap layer
+  const [showHeatmap, setShowHeatmap] = useState(true)
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Full-bleed map */}
       <NereusMap
         alerts={displayAlerts}
         reports={displayReports}
-        heatmap={displayHeatmap}
+        heatmap={showHeatmap ? displayHeatmap : null}
         cityBbox={activeBbox}
         localReports={localReports}
       />
@@ -134,6 +137,8 @@ export default function Dashboard() {
         scanning={scanning}
         onScan={handleScan}
         lastScanResult={lastScanResult}
+        showHeatmap={showHeatmap}
+        onToggleHeatmap={() => setShowHeatmap(p => !p)}
       />
 
       {/* Offline badge */}

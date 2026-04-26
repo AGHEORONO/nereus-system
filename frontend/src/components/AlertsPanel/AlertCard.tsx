@@ -36,24 +36,24 @@ export default function AlertCard({ alert, onClick }: Props) {
         display: 'block',
         width: '100%',
         textAlign: 'left',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid var(--color-border)',
+        background: 'rgba(0,0,0,0.4)',
+        border: '1px solid rgba(255,255,255,0.15)',
         borderRadius: 'var(--radius-sm)',
-        padding: '12px',
+        padding: '14px',
         cursor: 'pointer',
         transition: 'all 0.15s ease',
-        marginBottom: '8px',
+        marginBottom: '10px',
         fontFamily: 'var(--font-sans)',
       }}
       onMouseEnter={e => {
         const el = e.currentTarget
-        el.style.background = 'rgba(0,180,255,0.07)'
+        el.style.background = 'rgba(0,180,255,0.1)'
         el.style.borderColor = 'var(--color-primary)'
       }}
       onMouseLeave={e => {
         const el = e.currentTarget
-        el.style.background = 'rgba(255,255,255,0.03)'
-        el.style.borderColor = 'var(--color-border)'
+        el.style.background = 'rgba(0,0,0,0.4)'
+        el.style.borderColor = 'rgba(255,255,255,0.15)'
       }}
     >
       {/* Header row */}

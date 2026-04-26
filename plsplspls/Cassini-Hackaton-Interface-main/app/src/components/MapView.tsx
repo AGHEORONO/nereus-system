@@ -455,11 +455,21 @@ export default function MapView({
     if (zonesSrc) {
       zonesSrc.setData({
         type: 'FeatureCollection',
-        features: zones.map(z => ({
-          type: 'Feature',
-          properties: z,
-          geometry: z.geometry // Assuming the backend returns standard GeoJSON geometry
-        }))
+        features: zones.map(z => {
+          let geom = z.geometry;
+          if (z.geometry_geojson) {
+            try {
+              geom = typeof z.geometry_geojson === 'string' ? JSON.parse(z.geometry_geojson) : z.geometry_geojson;
+            } catch (e) {
+              console.error("Failed to parse zone geometry", e);
+            }
+          }
+          return {
+            type: 'Feature',
+            properties: z,
+            geometry: geom || { type: "Polygon", coordinates: [] }
+          };
+        })
       });
     }
   }, [satelliteData, zones, mapLoaded]);

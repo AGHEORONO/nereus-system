@@ -14,16 +14,22 @@ export default function DrawZoneButton({ mapRef, onZoneSaved }: Props) {
   const [zoneEmail, setZoneEmail] = useState('')
   const createZone = useCreateZone()
 
-  // Handle escape key
+  // Handle escape and enter keys
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && drawMode) {
+      if (!drawMode) return
+      if (e.key === 'Escape') {
         cancelDraw()
+      } else if (e.key === 'Enter') {
+        if (drawnPoints.length >= 3) {
+          setDrawMode(false)
+          setShowSave(true)
+        }
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [drawMode])
+  }, [drawMode, drawnPoints.length])
 
   // Wire map click/dblclick when in draw mode
   useEffect(() => {
@@ -204,7 +210,7 @@ export default function DrawZoneButton({ mapRef, onZoneSaved }: Props) {
             ✏️ Drawing Mode
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-2)', marginBottom: '8px' }}>
-            {drawnPoints.length} point{drawnPoints.length !== 1 ? 's' : ''} — {drawnPoints.length < 3 ? 'click to add vertices' : 'double-click to close'}
+            {drawnPoints.length} point{drawnPoints.length !== 1 ? 's' : ''} — {drawnPoints.length < 3 ? 'click to add vertices' : 'Enter or double-click to close'}
           </div>
           <button
             onClick={cancelDraw}

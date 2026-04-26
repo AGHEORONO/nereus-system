@@ -106,7 +106,18 @@ def _fetch_openeo(
 
     west, south, east, north = bbox
     conn = openeo.connect(OPENEO_BACKEND)
-    conn.authenticate_oidc()   # Uses cached refresh token after first device-flow login
+    
+    from app.config import settings
+    if settings.cdse_username and settings.cdse_password:
+        logger.info("Authenticating openEO with CDSE credentials from config.")
+        conn.authenticate_oidc_resource_owner_password_credentials(
+            username=settings.cdse_username,
+            password=settings.cdse_password,
+            client_id="cdse-public"
+        )
+    else:
+        logger.warning("No CDSE credentials found. Attempting device flow authentication (may hang in headless environments).")
+        conn.authenticate_oidc()   # Uses cached refresh token after first device-flow login
 
     cube = conn.load_collection(
         "SENTINEL2_L2A",

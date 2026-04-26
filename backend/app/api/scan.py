@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/scan", tags=["scan"])
 
 # Maximum seconds to wait for the openEO fetch before falling back
-_OPENEO_TIMEOUT_S = 10
+_OPENEO_TIMEOUT_S = 120
 
 
 class ScanRequest(BaseModel):

@@ -21,8 +21,8 @@ class Settings(BaseSettings):
         return self.nereus_offline_mode or self.demo_mode
 
     # Spectral index anomaly thresholds
-    ndci_threshold: float = 0.0       # NDCI > 0 indicates chlorophyll excess
-    turbidity_threshold: float = 1.15  # B4/B3 > 1.15 indicates elevated turbidity
+    ndci_threshold: float = 0.05       # NDCI > 0.05 indicates actual chlorophyll excess (avoids false positives at 0.0)
+    turbidity_threshold: float = 1.30  # B4/B3 > 1.30 indicates elevated turbidity
     min_anomaly_area_ha: float = 2.0   # Ignore tiny artefacts below this area
 
     # SQLite connection string

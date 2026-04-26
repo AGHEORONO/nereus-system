@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { Navigate } from 'react-router-dom'
 import NereusMap from '../components/Map/NereusMap'
 import TimeSlider from '../components/Map/TimeSlider'
 import AlertsPanel from '../components/AlertsPanel/AlertsPanel'
@@ -11,9 +12,13 @@ import type { BoundingBox } from '../types/geo'
 import type { CitizenReport } from '../types'
 
 export default function Dashboard() {
+  // If there's no selected location (e.g. page was refreshed), go back to welcome screen
+  const selectedLocation = useNereusStore((s) => s.selectedLocation)
+  if (!selectedLocation) return <Navigate to="/" replace />
+
   // Global UI state via zustand
   const {
-    selectedLocation, locationBbox, viewportBbox,
+    locationBbox, viewportBbox,
     setLocation, setLocationBbox,
     panelOpen, setPanelOpen,
     reportModalOpen, setReportModalOpen,
